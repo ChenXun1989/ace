@@ -1,4 +1,4 @@
-package wiki.chenxun.ace.core.base.example;
+package wiki.chenxun.ace.examples.simple;
 
 import lombok.Data;
 

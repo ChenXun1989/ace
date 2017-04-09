@@ -1,4 +1,4 @@
-package wiki.chenxun.ace.core.base.example;
+package wiki.chenxun.ace.examples.simple;
 
 import wiki.chenxun.ace.core.base.annotations.AceService;
 import wiki.chenxun.ace.core.base.annotations.Get;

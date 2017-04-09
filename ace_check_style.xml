@@ -125,7 +125,7 @@
         <!-- 长度检查 --> 
         <!-- 每行不超过150个字符 -->   
         <module name="LineLength">   
-            <property name="max" value="150" />   
+            <property name="max" value="150" />
         </module> 
         <!-- 方法不超过150行 -->   
         <module name="MethodLength">   

@@ -9,6 +9,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>ace-core</module>
+        <module>ace-examples</module>
     </modules>
 
     <packaging>pom</packaging>
