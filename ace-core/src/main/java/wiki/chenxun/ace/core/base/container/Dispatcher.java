@@ -1,6 +1,7 @@
 package wiki.chenxun.ace.core.base.container;
 
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpMethod;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -22,73 +23,96 @@ import java.util.Map;
  */
 @Component
 public final class Dispatcher implements ApplicationListener<ContextRefreshedEvent> {
-
-
+    /**
+     * get请求前缀
+     */
+    public static final String GET = "_get";
+    /**
+     * post请求前缀
+     */
+    public static final String POST = "_post";
+    /**
+     * spring容器上下文
+     */
     private ApplicationContext applicationContext;
 
-    private final Map<String, Object> aceServiceMap= new HashMap<>();
+    /**
+     * aceServiceMap实例集合
+     */
+    private final Map<String, Object> aceServiceMap = new HashMap<>();
+    /**
+     *  uri-path 与 method的映射
+     */
+    private final Map<String, Method> pathMap = new HashMap<>();
 
-    private final Map<String,Method>  pathMap=new HashMap<>();
-
-
+    /**
+     *  请求分发与处理
+     * @param request http协议请求
+     * @return 处理结果
+     * @throws InvocationTargetException 调用异常
+     * @throws IllegalAccessException 参数异常
+     */
     @SuppressWarnings("unchecked")
     public Object doDispatcher(FullHttpRequest request) throws InvocationTargetException, IllegalAccessException {
         //路由方法
-        String path=request.uri();
-        if(path.contains("?")){
-           path= path.substring(0,path.indexOf("?"));
+        String path = request.uri();
+        if (path.contains("?")) {
+            path = path.substring(0, path.indexOf("?"));
         }
         // 不带请求方式前缀
-        Object obj=aceServiceMap.get(path);
+        Object obj = aceServiceMap.get(path);
 
-        if(HttpMethod.GET.equals(request.method())){
-            path="_get"+path;
-        }else if(HttpMethod.POST.equals(request.method())){
-            path="_post"+path;
+        if (HttpMethod.GET.equals(request.method())) {
+            path = GET + path;
+        } else if (HttpMethod.POST.equals(request.method())) {
+            path = POST + path;
         }
 
-        Method method=pathMap.get(path);
+        Method method = pathMap.get(path);
 
         // TODO:参数转换
 
         //调用方法
-        Object result=method.invoke(obj,null);
+        Object result = method.invoke(obj, null);
 
         return result;
     }
 
-
+    /**
+     *  spring容器启动完毕之后触发
+     * @param contextRefreshedEvent
+     */
     @SuppressWarnings("unchecked")
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        applicationContext=contextRefreshedEvent.getApplicationContext();
-        Map<String, Object> map=applicationContext.getBeansWithAnnotation(AceService.class);
-        if(CollectionUtils.isEmpty(map)){
-            // warn
-        }else {
-            for(Map.Entry<String,Object> entry : map.entrySet()){
-                Class cls=entry.getValue().getClass();
-                AceService aceService= (AceService) cls.getAnnotation(AceService.class);
-                if(aceServiceMap.containsKey(aceService.path())){
+        applicationContext = contextRefreshedEvent.getApplicationContext();
+        Map<String, Object> map = applicationContext.getBeansWithAnnotation(AceService.class);
+        if (CollectionUtils.isEmpty(map)) {
+            // TODO: warn
+            System.out.println("warn  ....");
+        } else {
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                Class cls = entry.getValue().getClass();
+                AceService aceService = (AceService) cls.getAnnotation(AceService.class);
+                if (aceServiceMap.containsKey(aceService.path())) {
                     //关闭容器
                     SpringBeanUtil.closeContext();
-                }else {
-                    aceServiceMap.put(aceService.path(),entry.getValue());
+                } else {
+                    aceServiceMap.put(aceService.path(), entry.getValue());
                 }
-                Method[] methods=cls.getMethods();
-                for(Method m : methods){
-                    String path=null;
-                    if(m.getAnnotation(Get.class)!=null){
-                        path ="_get"+aceService.path();
+                Method[] methods = cls.getMethods();
+                for (Method m : methods) {
+                    String path = null;
+                    if (m.getAnnotation(Get.class) != null) {
+                        path = GET + aceService.path();
+                    } else if (m.getAnnotation(Post.class) != null) {
+                        path = POST + aceService.path();
                     }
-                    else if(m.getAnnotation(Post.class)!=null){
-                        path ="_post"+aceService.path();
-                    }
-                    if(pathMap.containsKey(path)){
+                    if (pathMap.containsKey(path)) {
                         // 重复的path 异常
 
-                    }else {
-                        pathMap.put(path,m);
+                    } else {
+                        pathMap.put(path, m);
                     }
                 }
 
@@ -97,7 +121,7 @@ public final class Dispatcher implements ApplicationListener<ContextRefreshedEve
         }
 
 
-        Server server=applicationContext.getBean(Server.class);
+        final Server server = applicationContext.getBean(Server.class);
         new Thread(new Runnable() {
             @Override
             public void run() {
