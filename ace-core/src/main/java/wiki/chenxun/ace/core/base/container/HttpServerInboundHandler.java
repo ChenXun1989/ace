@@ -60,6 +60,7 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
                 response = dispatcher.doDispatcher(request);
             } catch (Exception ex) {
                 // TODO: 异常处理
+                ex.printStackTrace();
             }
             ObjectMapper om = new ObjectMapper();
             String jsonStr = om.writer().writeValueAsString(response);

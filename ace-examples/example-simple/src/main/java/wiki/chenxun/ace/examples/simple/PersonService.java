@@ -6,6 +6,7 @@ package wiki.chenxun.ace.examples.simple;
 public interface PersonService {
 
 
-     Person test();
+     Person test(String name,int age);
+
 
 }
