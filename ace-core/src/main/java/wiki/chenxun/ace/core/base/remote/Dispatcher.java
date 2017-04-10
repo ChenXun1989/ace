@@ -9,8 +9,13 @@ import wiki.chenxun.ace.core.base.annotations.Spi;
 
 @Spi("netty")
 public interface Dispatcher {
-
-     Object doDispatcher(FullHttpRequest request) throws Exception;
+    /**
+     * 请求分发与处理
+     * @param request 请求对象
+     * @return 处理结果
+     * @throws Exception 异常基类
+     */
+    Object doDispatcher(FullHttpRequest request) throws Exception;
 
 
 }

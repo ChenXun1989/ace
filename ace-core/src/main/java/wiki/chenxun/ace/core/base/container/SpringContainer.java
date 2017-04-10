@@ -11,8 +11,13 @@ import java.util.Observable;
  */
 public class SpringContainer extends Observable implements Container {
 
+    /**
+     * 默认的ace 核心包路径
+     */
     public static final String ACE_CORE_PACKAGE = "wiki.chenxun.ace.core";
-
+    /**
+     * spring 容器上下文
+     */
     private AnnotationConfigApplicationContext applicationContext;
 
     @Override

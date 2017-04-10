@@ -8,9 +8,17 @@ import lombok.Data;
 @Data
 public class ApplicationInfo {
 
+    /**
+     * name
+     */
     private String name;
-
+    /**
+     * version
+     */
     private String version;
 
+    /**
+     * desc
+     */
     private String desc;
 }

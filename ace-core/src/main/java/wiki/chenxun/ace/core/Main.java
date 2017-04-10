@@ -10,7 +10,9 @@ import wiki.chenxun.ace.core.base.container.Container;
  * Created by chenxun on 2017/4/7.
  */
 public final class Main {
-
+    /**
+     * 服务运行标示，0运行，其他停止
+     */
     private static volatile int flag = 0;
 
     private Main() {

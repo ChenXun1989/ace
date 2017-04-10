@@ -24,9 +24,14 @@ public final class Context {
     private final Map<String, MethodDefine> pathMap = new HashMap<>();
 
 
-
+    /**
+     * Observable
+     */
     private static ContainerObservable containerObservable = new ContainerObservable();
 
+    /**
+     * Observable
+     */
     private static class ContainerObservable extends Observable {
         @Override
         public synchronized void setChanged() {
@@ -34,18 +39,37 @@ public final class Context {
         }
     }
 
-
-    public static enum Event {
-        STARTED,STOPED;
+    /**
+     * 事件类型
+     */
+    public enum Event {
+        /**
+         * 已开始
+         */
+        STARTED,
+        /**
+         * 已结束
+         */
+        STOPED;
     }
 
+    /**
+     * 当前容器
+     */
     private static Container currentContainer;
 
+    /**
+     * getCurrentContainer
+     * @return Container
+     */
     public static Container getCurrentContainer() {
         return currentContainer;
     }
 
-
+    /**
+     * setCurrentContainer
+     * @param currentContainer 当前ioc容器
+     */
     public static void setCurrentContainer(Container currentContainer) {
 
         Context.currentContainer = currentContainer;
@@ -53,18 +77,24 @@ public final class Context {
 
     }
 
+    /**
+     * 通知观察者
+     * @param event 事件类型
+     */
     public static void notifyObservers(Event event) {
         containerObservable.setChanged();
         containerObservable.notifyObservers(event);
     }
 
-
+    /**
+     * ioc容器里面获取对象
+     * @param t ioc容器里面的bean
+     * @param <T> ioc容器里面的bean
+     * @return ioc容器里面的bean
+     */
     public static <T> T getBean(Class<T> t) {
         return currentContainer.getBean(t);
     }
-
-
-
 
 
 }

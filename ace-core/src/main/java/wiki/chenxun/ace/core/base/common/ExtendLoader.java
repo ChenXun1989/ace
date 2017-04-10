@@ -21,26 +21,52 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * @Description: 扩展点加载
- * Created by chenxun on 2017/4/10.
+ * 扩展点加载类
+ *
+ * @param <T> spi扩展点
  */
-public class ExtendLoader<T> implements Observer {
+public final class ExtendLoader<T> implements Observer {
 
+    /**
+     * spi 默认值
+     */
     public static final String DEFAULT_SPI_NAME = "default";
+    /**
+     * spi 文件位置
+     */
     private static final String ACE_DIRECTORY = "META-INF/ace/";
-
+    /**
+     * 扩展类加载全局容器
+     */
     private static final ConcurrentMap<Class<?>, ExtendLoader<?>> EXTEND_LOADERS = new ConcurrentHashMap();
-
+    /**
+     * 扩展点多个扩展实例容器
+     */
     private final ConcurrentHashMap<String, Object> extendInstances = new ConcurrentHashMap<>();
-
+    /**
+     * 一个扩展点对应的多个扩展class
+     */
     private final ConcurrentHashMap<String, Class> extendClasses = new ConcurrentHashMap<>();
+    /**
+     * 扩展点对应的默认扩展
+     */
     private String cachedDefaultName;
+    /**
+     * 扩展点类型
+     */
     private Class type;
 
     private ExtendLoader(Class type) {
         this.type = type;
     }
 
+    /**
+     * 获取扩展点的扩展加载类
+     *
+     * @param type 扩展点类型
+     * @param <T>  类型
+     * @return 扩展加载类
+     */
     public static <T> ExtendLoader<T> getExtendLoader(Class<T> type) {
         if (type == null) {
             throw new IllegalArgumentException("Extension type == null");
@@ -60,7 +86,12 @@ public class ExtendLoader<T> implements Observer {
         return loader;
     }
 
-    // spi 文件key
+    /**
+     * 获取扩展点实例
+     *
+     * @param name 扩展点的key
+     * @return 扩展点实例
+     */
     public T getExtension(String name) {
         if (name == null && name.trim().length() == 0) {
             throw new IllegalArgumentException("name  must not blank ");
@@ -80,6 +111,12 @@ public class ExtendLoader<T> implements Observer {
         return t;
     }
 
+    /**
+     * 创建扩展点实例
+     *
+     * @param name 扩展点的key
+     * @return 扩展点实例
+     */
     private T createExtension(String name) {
         Class clazz = this.extendClasses.get(name);
         if (clazz == null) {
@@ -94,6 +131,15 @@ public class ExtendLoader<T> implements Observer {
         }
     }
 
+    /**
+     * 给扩展点实例注入ioc容器对象
+     *
+     * @param t   扩展点实例
+     * @param <T> 扩展点
+     * @throws IntrospectionException    IntrospectionException
+     * @throws InvocationTargetException InvocationTargetException
+     * @throws IllegalAccessException    IllegalAccessException
+     */
     private <T> void injectProperty(T t) throws IntrospectionException, InvocationTargetException, IllegalAccessException {
         Container container = Context.getCurrentContainer();
         BeanInfo beanInfo = Introspector.getBeanInfo(t.getClass());
@@ -111,7 +157,9 @@ public class ExtendLoader<T> implements Observer {
 
     }
 
-
+    /**
+     * 加载扩展点对应的class列表
+     */
     private void loadExtensionClasses() {
         Spi defaultAnnotation = (Spi) this.type.getAnnotation(Spi.class);
         if (defaultAnnotation != null) {
@@ -120,7 +168,11 @@ public class ExtendLoader<T> implements Observer {
         this.loadFile(ACE_DIRECTORY);
     }
 
-
+    /**
+     * 读取spi文件
+     *
+     * @param dir 文件目录
+     */
     private void loadFile(String dir) {
         String fileName = dir + this.type.getName();
 
@@ -169,35 +221,50 @@ public class ExtendLoader<T> implements Observer {
                                     if (line.length() > 0) {
                                         Class clazz = Class.forName(line, true, classLoader);
                                         if (!this.type.isAssignableFrom(clazz)) {
-                                            throw new IllegalStateException("Error when load extension class(interface: " + this.type + ", class line: " + clazz.getName() + "), class " + clazz.getName() + "is not subtype of interface.");
+                                            throw new IllegalStateException("Error when load extension class(interface: "
+                                                    + this.type + ", class line: " + clazz.getName() + "), class "
+                                                    + clazz.getName() + "is not subtype of interface.");
                                         }
                                         extendClasses.putIfAbsent(t2, clazz);
 
                                     }
                                 } catch (Throwable var28) {
-                                    IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: " + this.type + ", class line: " + line + ") in " + url + ", cause: " + var28.getMessage(), var28);
-                                    // this.exceptions.put(line, e);
+                                    IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: "
+                                            + this.type + ", class line: " + line + ") in "
+                                            + url + ", cause: " + var28.getMessage(), var28);
+
                                 }
                             }
                         } finally {
                             t1.close();
                         }
                     } catch (Throwable var30) {
-                        // logger.error("Exception when load extension class(interface: " + this.type + ", class file: " + url + ") in " + url, var30);
+
                     }
                 }
             }
         } catch (Throwable var31) {
-            // logger.error("Exception when load extension class(interface: " + this.type + ", description file: " + fileName + ").", var31);
+
         }
 
     }
 
-
+    /**
+     * 比较class是否有@spi注解
+     *
+     * @param type Class
+     * @param <T>  范型
+     * @return 有返回true，否则fasle
+     */
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
         return type.isAnnotationPresent(Spi.class);
     }
 
+    /**
+     * 获取扩展点类加载器
+     *
+     * @return ClassLoader
+     */
     private static ClassLoader findClassLoader() {
         return ExtendLoader.class.getClassLoader();
     }

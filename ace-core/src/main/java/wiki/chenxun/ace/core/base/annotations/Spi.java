@@ -8,12 +8,11 @@ import java.lang.annotation.Target;
 
 
 /**
- * @Description:
- * Created by chenxun on 2017/4/7.
+ * @Description: Created by chenxun on 2017/4/7.
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Spi {
-    String value() ;
+    String value();
 }
