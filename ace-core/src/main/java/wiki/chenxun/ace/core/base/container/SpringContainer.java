@@ -4,12 +4,11 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
 
 /**
  * @Description: Created by chenxun on 2017/4/10.
  */
-public class SpringContainer extends Observable implements Container {
+public class SpringContainer implements Container {
 
     /**
      * 默认的ace 核心包路径
@@ -38,7 +37,6 @@ public class SpringContainer extends Observable implements Container {
     @Override
     public void start() {
         applicationContext.start();
-        notifyObservers();
     }
 
     @Override
