@@ -1,9 +1,8 @@
 package wiki.chenxun.ace.core;
 
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import java.util.ArrayList;
-import java.util.List;
+import wiki.chenxun.ace.core.base.common.Context;
+import wiki.chenxun.ace.core.base.common.ExtendLoader;
+import wiki.chenxun.ace.core.base.container.Container;
 
 
 /**
@@ -11,10 +10,8 @@ import java.util.List;
  * Created by chenxun on 2017/4/7.
  */
 public final class Main {
-    /**
-     * aceServicePackage
-     */
-    public static final String ACE_SERVICE_PACKAGE = "aceServicePackage:";
+
+    private static volatile int flag = 0;
 
     private Main() {
 
@@ -26,19 +23,36 @@ public final class Main {
      * @param args 启动参数
      */
     public static void main(String[] args) {
-        List<String> scanPackageList = new ArrayList<>();
-        scanPackageList.add("wiki.chenxun.ace.core");
-        if (null != args && args.length > 0) {
-            for (String arg : args) {
-                if (arg.startsWith(ACE_SERVICE_PACKAGE)) {
-                    scanPackageList.add(arg.substring(arg.indexOf(ACE_SERVICE_PACKAGE) + ACE_SERVICE_PACKAGE.length()));
+
+        ExtendLoader<Container> loader = ExtendLoader.getExtendLoader(Container.class);
+        Container container = loader.getExtension(ExtendLoader.DEFAULT_SPI_NAME);
+        Context.setCurrentContainer(container);
+        container.init(args);
+        container.registerShutdownHook();
+        container.start();
+        Context.notifyObservers(Context.Event.STARTED);
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Context.notifyObservers(Context.Event.STOPED);
+                synchronized (Main.class) {
+                    flag = 1;
+                }
+            }
+        }));
+
+
+        synchronized (Main.class) {
+            while (flag == 0) {
+                try {
+                    Main.class.wait();
+                } catch (InterruptedException ignore) {
+
                 }
             }
         }
-        AnnotationConfigApplicationContext applicationContext =
-                new AnnotationConfigApplicationContext(scanPackageList.toArray(new String[scanPackageList.size()]));
-        applicationContext.registerShutdownHook();
-        applicationContext.start();
+
+        System.out.println("ace Server stop !!!");
 
 
     }

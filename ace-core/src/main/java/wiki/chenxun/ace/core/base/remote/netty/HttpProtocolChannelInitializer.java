@@ -1,15 +1,13 @@
-package wiki.chenxun.ace.core.base.container;
+package wiki.chenxun.ace.core.base.remote.netty;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import org.springframework.stereotype.Component;
 
 /**
  * @Description: Created by chenxun on 2017/4/8.
  */
-@Component("httpProtocolChannelInitializer")
 public class HttpProtocolChannelInitializer extends ChannelInitializer {
 
     /**

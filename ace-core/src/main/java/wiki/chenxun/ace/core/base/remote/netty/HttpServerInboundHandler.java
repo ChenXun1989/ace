@@ -1,4 +1,4 @@
-package wiki.chenxun.ace.core.base.container;
+package wiki.chenxun.ace.core.base.remote.netty;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.netty.buffer.Unpooled;
@@ -10,7 +10,8 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.AsciiString;
-import wiki.chenxun.ace.core.base.support.SpringBeanUtil;
+import wiki.chenxun.ace.core.base.common.ExtendLoader;
+import wiki.chenxun.ace.core.base.remote.Dispatcher;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -42,7 +43,7 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
     private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
     public HttpServerInboundHandler() {
-        dispatcher = SpringBeanUtil.getBean(Dispatcher.class);
+        dispatcher = ExtendLoader.getExtendLoader(Dispatcher.class).getExtension(ExtendLoader.DEFAULT_SPI_NAME);
     }
 
 

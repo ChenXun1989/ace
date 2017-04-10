@@ -1,4 +1,4 @@
-package wiki.chenxun.ace.core.base.container;
+package wiki.chenxun.ace.core.base.remote;
 
 import lombok.Data;
 
@@ -22,6 +22,8 @@ public class MethodDefine implements Serializable {
      * get请求前缀
      */
     public static final String GET = "_get";
+
+
 
     /**
      *  key
