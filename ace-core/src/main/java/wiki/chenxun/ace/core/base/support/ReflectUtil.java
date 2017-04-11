@@ -26,7 +26,7 @@ public final class ReflectUtil {
 
     /**
      * 使用字节码工具ASM来获取方法的参数名
-     *  FIXME  次函数在Web环境中有可能得不到ClassReader
+     *  FIXME  此函数在Web环境中有可能得不到ClassReader
      * @param method 方法
      * @return 参数名列表
      * @throws IOException io异常
