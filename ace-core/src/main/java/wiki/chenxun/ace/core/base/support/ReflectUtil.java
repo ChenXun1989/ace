@@ -1,8 +1,11 @@
 package wiki.chenxun.ace.core.base.support;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
@@ -24,20 +27,22 @@ public final class ReflectUtil {
 
     /**
      * 使用字节码工具ASM来获取方法的参数名
+     * FIXME  此函数在Web环境中有可能得不到ClassReader
      *
      * @param method 方法
      * @return 参数名列表
      * @throws IOException io异常
      */
-    public static String[] getMethodParamNames(final Method method) throws IOException {
+    public static List<MethodParameter> getMethodParamNames(final Method method) throws IOException {
 
         final String methodName = method.getName();
         final Class<?>[] methodParameterTypes = method.getParameterTypes();
+        final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
+        final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         final int methodParameterCount = methodParameterTypes.length;
         final String className = method.getDeclaringClass().getName();
         final boolean isStatic = Modifier.isStatic(method.getModifiers());
-        final String[] methodParametersNames = new String[methodParameterCount];
-
+        final List<MethodParameter> methodParameters = new ArrayList<MethodParameter>();
         ClassReader cr = new ClassReader(className);
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         cr.accept(new ClassAdapter(cw) {
@@ -56,14 +61,21 @@ public final class ReflectUtil {
                         //如果是静态方法，第一个参数就是方法参数，非静态方法，则第一个参数是 this ,然后才是方法的参数
                         int methodParameterIndex = isStatic ? index : index - 1;
                         if (0 <= methodParameterIndex && methodParameterIndex < methodParameterCount) {
-                            methodParametersNames[methodParameterIndex] = name;
+                            MethodParameter methodParameter = new MethodParameter();
+                            methodParameter.setMethod(method);
+                            methodParameter.setParameterIndex(methodParameterIndex);
+                            methodParameter.setParameterName(name);
+                            methodParameter.setParameterType(methodParameterTypes[methodParameterIndex]);
+                            methodParameter.setGenericParameterType(genericParameterTypes[methodParameterIndex]);
+                            methodParameter.setParameterAnnotations(parameterAnnotations[methodParameterIndex]);
+                            methodParameters.add(methodParameter);
                         }
                         super.visitLocalVariable(name, desc, signature, start, end, index);
                     }
                 };
             }
         }, 0);
-        return methodParametersNames;
+        return methodParameters;
     }
 
     /**
