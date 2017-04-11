@@ -27,7 +27,8 @@ public final class ReflectUtil {
 
     /**
      * 使用字节码工具ASM来获取方法的参数名
-     *  FIXME  此函数在Web环境中有可能得不到ClassReader
+     * FIXME  此函数在Web环境中有可能得不到ClassReader
+     *
      * @param method 方法
      * @return 参数名列表
      * @throws IOException io异常
@@ -37,7 +38,7 @@ public final class ReflectUtil {
         final String methodName = method.getName();
         final Class<?>[] methodParameterTypes = method.getParameterTypes();
         final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
-        final Annotation[][]  parameterAnnotations = method.getParameterAnnotations();
+        final Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         final int methodParameterCount = methodParameterTypes.length;
         final String className = method.getDeclaringClass().getName();
         final boolean isStatic = Modifier.isStatic(method.getModifiers());
