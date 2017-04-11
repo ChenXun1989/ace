@@ -202,7 +202,7 @@ public final class ExtendLoader<T> implements Observer {
                                         continue label269;
                                     }
 
-                                    int ci = line.indexOf(35);
+                                    int ci = line.indexOf('#');
                                     if (ci >= 0) {
                                         line = line.substring(0, ci);
                                     }
@@ -212,7 +212,7 @@ public final class ExtendLoader<T> implements Observer {
 
                                 try {
                                     String t2 = null;
-                                    int var32 = line.indexOf(61);
+                                    int var32 = line.indexOf('=');
                                     if (var32 > 0) {
                                         t2 = line.substring(0, var32).trim();
                                         line = line.substring(var32 + 1).trim();
