@@ -1,5 +1,6 @@
 package wiki.chenxun.ace.core.base.support;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
@@ -27,6 +28,10 @@ public   class MethodParameter  {
      * 参数名
      */
     private volatile String parameterName;
+    /**
+     * 参数Annotation
+     */
+    private volatile Annotation[] parameterAnnotations;
 
     public Method getMethod() {
         return method;
@@ -67,5 +72,13 @@ public   class MethodParameter  {
 
     public void setGenericParameterType(Type genericParameterType) {
         this.genericParameterType = genericParameterType;
+    }
+
+    public Annotation[] getParameterAnnotations() {
+        return parameterAnnotations;
+    }
+
+    public void setParameterAnnotations(Annotation[] parameterAnnotations) {
+        this.parameterAnnotations = parameterAnnotations;
     }
 }

@@ -1,6 +1,7 @@
 package wiki.chenxun.ace.core.base.support;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public final class ReflectUtil {
         final String methodName = method.getName();
         final Class<?>[] methodParameterTypes = method.getParameterTypes();
         final java.lang.reflect.Type[] genericParameterTypes = method.getGenericParameterTypes();
+        final Annotation[][]  parameterAnnotations = method.getParameterAnnotations();
         final int methodParameterCount = methodParameterTypes.length;
         final String className = method.getDeclaringClass().getName();
         final boolean isStatic = Modifier.isStatic(method.getModifiers());
@@ -64,6 +66,7 @@ public final class ReflectUtil {
                             methodParameter.setParameterName(name);
                             methodParameter.setParameterType(methodParameterTypes[methodParameterIndex]);
                             methodParameter.setGenericParameterType(genericParameterTypes[methodParameterIndex]);
+                            methodParameter.setParameterAnnotations(parameterAnnotations[methodParameterIndex]);
                             methodParameters.add(methodParameter);
                         }
                         super.visitLocalVariable(name, desc, signature, start, end, index);
