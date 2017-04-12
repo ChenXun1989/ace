@@ -1,7 +1,7 @@
 ### Maven template
 target/
 .idea/
-
+.project
 *iml
 
 
