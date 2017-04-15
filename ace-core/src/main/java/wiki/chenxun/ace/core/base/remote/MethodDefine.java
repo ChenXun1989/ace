@@ -1,6 +1,8 @@
 package wiki.chenxun.ace.core.base.remote;
 
 import lombok.Data;
+import wiki.chenxun.ace.core.base.annotations.AceHttpMethod;
+import wiki.chenxun.ace.core.base.support.MethodParameter;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
@@ -14,26 +16,15 @@ import java.util.List;
 public class MethodDefine implements Serializable {
 
     /**
-     * post请求前缀
+     * HTTP method
      */
-    public static final String POST = "_post";
+    private AceHttpMethod aceHttpMethod;
 
     /**
-     * get请求前缀
+     * 方法内参
      */
-    public static final String GET = "_get";
+    private List<MethodParameter> parameters = new ArrayList<MethodParameter>();
 
-
-
-    /**
-     *  key
-     */
-    private List<String> paramKeyList = new ArrayList<>();
-
-    /**
-     *  class
-     */
-    private List<Class> paramClassList = new ArrayList<>();
     /**
      * 请求uri
      */
