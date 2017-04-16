@@ -3,6 +3,8 @@ package wiki.chenxun.ace.core.base.annotations.parser;
 import wiki.chenxun.ace.core.base.annotations.AceHttpMethod;
 import wiki.chenxun.ace.core.base.annotations.AceService;
 import wiki.chenxun.ace.core.base.common.Context;
+
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Set;
@@ -20,7 +22,12 @@ public class AceServiceParser implements AnnotationParser {
             AceService aceService = clazz.getAnnotation(AceService.class);
             Context.putAceServiceMap(aceService, clazz);
             for (Method method : clazz.getMethods()) {
-                this.initAceServiceMethod(clazz, method);
+                try {
+                    this.initAceServiceMethod(clazz, method);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    //TODO method相关异常处理
+                }
             }
 
         }
@@ -33,10 +40,10 @@ public class AceServiceParser implements AnnotationParser {
      * @param clazz  aceService
      * @param method method
      */
-    private void initAceServiceMethod(Class<?> clazz, Method method) {
+    private void initAceServiceMethod(Class<?> clazz, Method method) throws IOException {
         for (AceHttpMethod aceHttpMethod : AceHttpMethod.values()) {
             if (method.isAnnotationPresent(aceHttpMethod.getAnnotationClazz())) {
-                Context.putAceServiceMethodMap(clazz, aceHttpMethod, Context.createMethodDefine(method));
+                Context.putAceServiceMethodMap(clazz, aceHttpMethod,method);
                 return;
             }
         }

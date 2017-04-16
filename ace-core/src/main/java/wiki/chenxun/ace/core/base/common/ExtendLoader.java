@@ -88,6 +88,26 @@ public final class ExtendLoader<T> implements Observer {
     }
 
     /**
+     * 比较class是否有@spi注解
+     *
+     * @param type Class
+     * @param <T>  范型
+     * @return 有返回true，否则fasle
+     */
+    private static <T> boolean withExtensionAnnotation(Class<T> type) {
+        return type.isAnnotationPresent(Spi.class);
+    }
+
+    /**
+     * 获取扩展点类加载器
+     *
+     * @return ClassLoader
+     */
+    private static ClassLoader findClassLoader() {
+        return ExtendLoader.class.getClassLoader();
+    }
+
+    /**
      * 获取扩展点实例
      *
      * @param name 扩展点的key
@@ -121,7 +141,7 @@ public final class ExtendLoader<T> implements Observer {
     private T createExtension(String name) {
         Class clazz = this.extendClasses.get(name);
         if (clazz == null) {
-            throw new ExtendLoadException("extend name not find ");
+            throw new ExtendLoadException("extend " + name + " not find ");
         }
         try {
             T t = (T) clazz.newInstance();
@@ -249,27 +269,6 @@ public final class ExtendLoader<T> implements Observer {
         }
 
     }
-
-    /**
-     * 比较class是否有@spi注解
-     *
-     * @param type Class
-     * @param <T>  范型
-     * @return 有返回true，否则fasle
-     */
-    private static <T> boolean withExtensionAnnotation(Class<T> type) {
-        return type.isAnnotationPresent(Spi.class);
-    }
-
-    /**
-     * 获取扩展点类加载器
-     *
-     * @return ClassLoader
-     */
-    private static ClassLoader findClassLoader() {
-        return ExtendLoader.class.getClassLoader();
-    }
-
 
     @Override
     public void update(Observable o, Object arg) {

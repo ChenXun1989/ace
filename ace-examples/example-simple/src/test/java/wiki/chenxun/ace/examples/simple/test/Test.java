@@ -15,7 +15,5 @@ public class Test {
         List<String> argList = new ArrayList<>();
         argList.add("aceServicePackage:" + packageName);
         Main.main(argList.toArray(new String[argList.size()]));
-
-
     }
 }
