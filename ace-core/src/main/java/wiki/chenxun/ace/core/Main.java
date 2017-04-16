@@ -48,7 +48,7 @@ public final class Main {
                     Set<Class<?>> set = map.get(annotationClass);
                     if (set == null) {
                         set = new HashSet<>();
-                        map.put(annotationClass,set);
+                        map.put(annotationClass, set);
                     }
                     set.add(cls);
                 }
