@@ -1,6 +1,7 @@
 package wiki.chenxun.ace.core.base.annotations.parser;
 
 import wiki.chenxun.ace.core.base.annotations.AceService;
+import wiki.chenxun.ace.core.base.annotations.ConfigBean;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -21,7 +22,9 @@ public class AnnotationParserRegister {
      * 注册注解解析器
      */
     public void register() {
+        // FIXME: 后期改成spi
         parserMap.put(AceService.class, new AceServiceParser());
+        parserMap.put(ConfigBean.class, new ConfigBeanParser());
     }
 
     /**
