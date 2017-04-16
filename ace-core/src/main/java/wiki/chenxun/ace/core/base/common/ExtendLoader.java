@@ -3,6 +3,7 @@ package wiki.chenxun.ace.core.base.common;
 import wiki.chenxun.ace.core.base.annotations.Spi;
 import wiki.chenxun.ace.core.base.container.Container;
 import wiki.chenxun.ace.core.base.exception.ExtendLoadException;
+import wiki.chenxun.ace.core.base.register.Register;
 import wiki.chenxun.ace.core.base.remote.Server;
 
 import java.beans.BeanInfo;
@@ -275,6 +276,9 @@ public final class ExtendLoader<T> implements Observer {
         final Server server = ExtendLoader.getExtendLoader(Server.class).getExtension(DEFAULT_SPI_NAME);
         if (arg.equals(Context.Event.STARTED)) {
             //解析方法，暴露ace服务。
+            //  Register register = ExtendLoader.getExtendLoader(Register.class).getExtension(DEFAULT_SPI_NAME);
+            //  register.register();
+
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {

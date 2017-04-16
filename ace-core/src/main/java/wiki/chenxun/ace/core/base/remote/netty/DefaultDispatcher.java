@@ -9,6 +9,7 @@ import io.netty.util.CharsetUtil;
 import wiki.chenxun.ace.core.base.common.ApplicationInfo;
 import wiki.chenxun.ace.core.base.remote.Dispatcher;
 
+import javax.script.ScriptEngine;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
@@ -47,6 +48,13 @@ public class DefaultDispatcher implements Dispatcher {
 
 
         }
+
+
+
+
+
+
+
         // TODO:路由方法
 
         // TODO:调用方法
