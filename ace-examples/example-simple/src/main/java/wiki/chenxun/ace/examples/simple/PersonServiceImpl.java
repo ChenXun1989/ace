@@ -2,6 +2,7 @@ package wiki.chenxun.ace.examples.simple;
 
 import wiki.chenxun.ace.core.base.annotations.AceService;
 import wiki.chenxun.ace.core.base.annotations.Get;
+import wiki.chenxun.ace.core.base.annotations.Post;
 import wiki.chenxun.ace.core.base.annotations.RequestParam;
 
 /**
@@ -11,7 +12,7 @@ import wiki.chenxun.ace.core.base.annotations.RequestParam;
 public class PersonServiceImpl implements PersonService {
 
 
-    @Get
+    @Post
     @Override
     public Person test(@RequestParam String name, @RequestParam int age) {
         Person person = new Person();

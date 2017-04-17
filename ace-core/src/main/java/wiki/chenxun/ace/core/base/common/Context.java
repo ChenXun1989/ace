@@ -108,7 +108,8 @@ public final class Context {
 
     /**
      * 获取method define
-     * @param uri uri
+     *
+     * @param uri           uri
      * @param aceHttpMethod ace http method
      * @return method define
      */
@@ -116,18 +117,21 @@ public final class Context {
         return ACESERVICE_METHOD_MAP.get(getAceClass(uri)).get(aceHttpMethod);
     }
 
+
+
     private static Class<?> getAceClass(String uri) {
         return ACESERVICE_MAP.get(getAceUri(uri));
     }
 
     /**
      * 获取系统默认aceUri
+     *
      * @param uri uri
      * @return uri
      */
     private static String getAceUri(String uri) {
         String aceUri = uri.split("\\?")[0];
-        if (!ACESERVICE_MAP.containsKey(aceUri)){
+        if (!ACESERVICE_MAP.containsKey(aceUri)) {
             aceUri = aceUri.substring(1).replace("/", ".");
             if (ACESERVICE_MAP.containsKey(aceUri)) {
                 aceUri = Context.getClassUri(ACESERVICE_MAP.get(aceUri));
@@ -157,7 +161,6 @@ public final class Context {
     public static String getClassUri(Class<?> clazz) {
         return clazz.getName();
     }
-
 
 
     /**
