@@ -42,4 +42,20 @@ public enum AceHttpMethod {
         }
     }
 
+    public static AceHttpMethod getAceHttpMethod(String httpMethodStr) {
+        AceHttpMethod aceHttpMethod;
+        if ("GET".equals(httpMethodStr)) {
+            aceHttpMethod = AceHttpMethod.GET;
+        } else if ("POST".equals(httpMethodStr)) {
+            aceHttpMethod = AceHttpMethod.POST;
+        } else if ("PUT".equals(httpMethodStr)) {
+            aceHttpMethod = AceHttpMethod.PUT;
+        }else if ("DELETE".equals(httpMethodStr)) {
+            aceHttpMethod = AceHttpMethod.DELETE;
+        } else {
+            throw new RuntimeException("暂不支持的 HTTP Method");
+        }
+        return aceHttpMethod;
+    }
+
 }

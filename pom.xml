@@ -10,6 +10,8 @@
     <modules>
         <module>ace-core</module>
         <module>ace-examples</module>
+        <module>ace-admin</module>
+        <module>ace-mybatis</module>
     </modules>
 
     <packaging>pom</packaging>

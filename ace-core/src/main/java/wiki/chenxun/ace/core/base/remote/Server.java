@@ -9,6 +9,8 @@ import java.io.Closeable;
  */
 @Spi("netty")
 public interface Server extends Closeable {
+
+
     /**
      *  开启服务
      * @throws Exception 异常基类
