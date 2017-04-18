@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -18,6 +19,11 @@ public class DefaultConfig implements Config {
     @Override
     public <T> T configBean(Class<T> cls) {
         return (T) configInstances.get(cls);
+    }
+
+    @Override
+    public Collection<Object> lists(){
+       return configInstances.values();
     }
 
     @Override

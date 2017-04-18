@@ -2,6 +2,7 @@ package wiki.chenxun.ace.core.base.config;
 
 import wiki.chenxun.ace.core.base.annotations.Spi;
 
+import java.util.Collection;
 import java.util.Observable;
 
 /**
@@ -20,6 +21,12 @@ public interface Config {
      * @return
      */
     <T> T configBean(Class<T> cls);
+
+    /**
+     * 获取配置列表
+     * @return
+     */
+    public Collection<Object> lists();
 
     /**
      * @param t

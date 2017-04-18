@@ -13,6 +13,8 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.DoubleSummaryStatistics;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.ResourceBundle;
@@ -57,7 +59,13 @@ public class ConfigBeanParser implements AnnotationParser {
             PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
             for (PropertyDescriptor propertyDescriptor : pds) {
                 String key = prefix + "." + propertyDescriptor.getName();
-                propertyDescriptor.getWriteMethod().invoke(obj, resource.getObject(key));
+                Method method = propertyDescriptor.getWriteMethod();
+                if (method != null) {
+                    String value=resource.getString(key);
+                    Class paramClass=method.getParameterTypes()[0];
+                    method.invoke(obj,parse(paramClass,value));
+                }
+
             }
             return obj;
         } catch (IntrospectionException e) {
@@ -70,6 +78,25 @@ public class ConfigBeanParser implements AnnotationParser {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private Object parse(Class cls,String value){
+        if(int.class.equals(cls)){
+            return Integer.parseInt(value);
+        }else if(long.class.equals(cls)){
+            return Long.parseLong(value);
+        }
+        else if(double.class.equals(cls)){
+            return Double.parseDouble(value);
+        }
+        else if(float.class.equals(cls)){
+             return Float.parseFloat(value);
+        }
+        else if(byte.class.equals(cls)){
+             return Byte.parseByte(value);
+        }
+        return value;
+
     }
 
 }

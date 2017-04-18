@@ -1,6 +1,11 @@
 package wiki.chenxun.ace.core.base.container;
 
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import wiki.chenxun.ace.core.base.common.ExtendLoader;
+import wiki.chenxun.ace.core.base.config.Config;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +36,18 @@ public class SpringContainer implements Container {
             }
         }
         applicationContext =
-                new AnnotationConfigApplicationContext(scanPackageList.toArray(new String[scanPackageList.size()]));
+                new AnnotationConfigApplicationContext();
+        Config config = ExtendLoader.getExtendLoader(Config.class).getExtension(ExtendLoader.DEFAULT_SPI_NAME);
+        ConfigBeanFactoryPostProcessor configBeanFactoryPostProcessor = new ConfigBeanFactoryPostProcessor(config);
+        applicationContext.addBeanFactoryPostProcessor(configBeanFactoryPostProcessor);
+
+        applicationContext.scan(scanPackageList.toArray(new String[scanPackageList.size()]));
+
     }
 
     @Override
     public void start() {
+        applicationContext.refresh();
         applicationContext.start();
     }
 
