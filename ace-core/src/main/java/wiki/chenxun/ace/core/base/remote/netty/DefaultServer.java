@@ -27,7 +27,7 @@ public class DefaultServer implements Server {
     /**
      * work线程
      */
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(100);
 
     /**
      * channelHandler注册
@@ -46,7 +46,7 @@ public class DefaultServer implements Server {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelInitializer)
                     .option(ChannelOption.SO_BACKLOG, serverProperties.getBackSize())
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                     .childOption(ChannelOption.SO_KEEPALIVE, true)
                      .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
             ChannelFuture future = bootstrap.bind(serverProperties.getPort()).sync();
             System.out.println("ace server starter !!!");

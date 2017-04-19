@@ -39,7 +39,7 @@ public class DefaultDispatcher implements Dispatcher {
     public Object doDispatcher(FullHttpRequest request) throws InvocationTargetException, IllegalAccessException {
         Object[] args;
         String uri = request.uri();
-        System.out.println("uri:\t" + uri);
+        //System.out.println("uri:\t" + uri);
         if (uri.endsWith("favicon.ico")) {
             return "";
         }
@@ -76,7 +76,7 @@ public class DefaultDispatcher implements Dispatcher {
 
 
         // TODO:调用方法
-        System.out.println(request.uri());
+        //System.out.println(request.uri());
         ApplicationInfo mock = new ApplicationInfo();
         mock.setName("ace");
         mock.setVersion("1.0");
@@ -109,7 +109,7 @@ public class DefaultDispatcher implements Dispatcher {
             String parameterName = methodParameter.getParameterName();
             Object paramterValue = parseObject(paramterMap.get(parameterName), methodParameter.getParameterType());
 
-            System.out.println("request:\t" + parameterName + "=" + paramterValue);
+            //System.out.println("request:\t" + parameterName + "=" + paramterValue);
 
             args[methodParameter.getParameterIndex()] = paramterValue;
         }

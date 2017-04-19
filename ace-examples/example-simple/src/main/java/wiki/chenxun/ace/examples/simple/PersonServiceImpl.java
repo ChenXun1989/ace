@@ -13,7 +13,7 @@ import wiki.chenxun.ace.core.base.annotations.RequestParam;
 public class PersonServiceImpl implements PersonService {
 
     /**
-     *  配置
+     * 配置
      */
     @Autowired
     private PersonProperties personProperties;
@@ -30,9 +30,19 @@ public class PersonServiceImpl implements PersonService {
     @Get
     @Override
     public Person test2() {
+
+        try {
+            Thread.currentThread().sleep(15);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        StringBuilder stringBuilder = new StringBuilder("name");
+        for (int i = 0; i < 1024; i++) {
+            stringBuilder.append("x");
+        }
         Person person = new Person();
         person.setAge(personProperties.getAge());
-        person.setName(personProperties.getName());
+        person.setName(stringBuilder.toString());
         return person;
     }
 }

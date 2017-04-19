@@ -102,7 +102,7 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // FIXME: 开发调试
-        System.err.println(cause.getStackTrace());
+       // System.err.println(cause.getMessage());
         super.exceptionCaught(ctx, cause);
     }
 
