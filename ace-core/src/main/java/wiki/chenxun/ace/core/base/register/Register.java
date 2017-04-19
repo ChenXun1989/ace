@@ -16,7 +16,7 @@ public interface Register extends ShutDownClearer {
 
     void unregister();
 
-    void addConfig(Config config);
+    void setConfig(Config config);
 
 
 

@@ -2,10 +2,12 @@ package wiki.chenxun.ace.core.base.common;
 
 import wiki.chenxun.ace.core.base.annotations.Spi;
 import wiki.chenxun.ace.core.base.config.Config;
+import wiki.chenxun.ace.core.base.container.ApplicationProperties;
 import wiki.chenxun.ace.core.base.container.Container;
 import wiki.chenxun.ace.core.base.exception.ExtendLoadException;
 import wiki.chenxun.ace.core.base.register.Register;
 import wiki.chenxun.ace.core.base.remote.Server;
+import wiki.chenxun.ace.core.base.remote.ServerProperties;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -20,7 +22,6 @@ import java.util.Enumeration;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * 扩展点加载类
@@ -30,6 +31,15 @@ import java.util.concurrent.ConcurrentMap;
 public final class ExtendLoader<T> implements Observer {
 
     /**
+     * 扩展类加载全局容器
+     */
+    private static ConcurrentHashMap<Class<?>, ExtendLoader<?>> extendLoaderMap;
+
+    static {
+        extendLoaderMap = new ConcurrentHashMap<>();
+    }
+
+    /**
      * spi 默认值
      */
     public static final String DEFAULT_SPI_NAME = "default";
@@ -37,18 +47,15 @@ public final class ExtendLoader<T> implements Observer {
      * spi 文件位置
      */
     private static final String ACE_DIRECTORY = "META-INF/ace/";
-    /**
-     * 扩展类加载全局容器
-     */
-    private static final ConcurrentMap<Class<?>, ExtendLoader<?>> EXTEND_LOADERS = new ConcurrentHashMap();
+
     /**
      * 扩展点多个扩展实例容器
      */
-    private final ConcurrentHashMap<String, Object> extendInstances = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Object> extendInstances;
     /**
      * 一个扩展点对应的多个扩展class
      */
-    private final ConcurrentHashMap<String, Class> extendClasses = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Class> extendClasses;
     /**
      * 扩展点对应的默认扩展
      */
@@ -60,7 +67,10 @@ public final class ExtendLoader<T> implements Observer {
 
     private ExtendLoader(Class type) {
         this.type = type;
+        extendInstances = new ConcurrentHashMap<>();
+        extendClasses = new ConcurrentHashMap<>();
     }
+
 
     /**
      * 获取扩展点的扩展加载类
@@ -79,10 +89,11 @@ public final class ExtendLoader<T> implements Observer {
         if (!withExtensionAnnotation(type)) {
             throw new ExtendLoadException("class must has @spi  ");
         }
-        ExtendLoader loader = EXTEND_LOADERS.get(type);
+
+        ExtendLoader loader = extendLoaderMap.get(type);
         if (loader == null) {
-            EXTEND_LOADERS.putIfAbsent(type, new ExtendLoader(type));
-            loader = (ExtendLoader) EXTEND_LOADERS.get(type);
+            extendLoaderMap.putIfAbsent(type, new ExtendLoader(type));
+            loader = (ExtendLoader) extendLoaderMap.get(type);
         }
 
         return loader;
@@ -115,19 +126,19 @@ public final class ExtendLoader<T> implements Observer {
      * @return 扩展点实例
      */
     public T getExtension(String name) {
-        if (name == null && name.trim().length() == 0) {
-            throw new IllegalArgumentException("name  must not blank ");
-        }
         if (cachedDefaultName == null) {
             this.loadExtensionClasses();
         }
-        if (DEFAULT_SPI_NAME.equals(name)) {
+        if (name == null || name.trim().length() == 0) {
             name = cachedDefaultName;
         }
-        T t = (T) extendInstances.get(name);
+        if (DEFAULT_SPI_NAME.equals(name)) {
+            name = this.cachedDefaultName;
+        }
+        T t = (T) this.extendInstances.get(name);
         if (t == null) {
             Class cls = extendClasses.get(name);
-            extendInstances.putIfAbsent(name, createExtension(name));
+            this.extendInstances.putIfAbsent(name, createExtension(name));
             t = (T) extendInstances.get(name);
         }
         return t;
@@ -146,7 +157,8 @@ public final class ExtendLoader<T> implements Observer {
         }
         try {
             T t = (T) clazz.newInstance();
-            injectProperty(t);
+
+            // injectProperty(t);
             return t;
         } catch (Exception e) {
             throw new ExtendLoadException("extend instance fail  ", e);
@@ -250,37 +262,35 @@ public final class ExtendLoader<T> implements Observer {
                                         extendClasses.putIfAbsent(t2, clazz);
 
                                     }
-                                } catch (Throwable var28) {
-                                    IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: "
-                                            + this.type + ", class line: " + line + ") in "
-                                            + url + ", cause: " + var28.getMessage(), var28);
-
+                                } catch (Throwable th) {
+                                    //TODO: 异常处理
                                 }
                             }
                         } finally {
                             t1.close();
                         }
-                    } catch (Throwable var30) {
-
+                    } catch (Throwable th) {
+                        //TODO: 异常处理
                     }
                 }
             }
-        } catch (Throwable var31) {
-
+        } catch (Throwable th) {
+            //TODO: 异常处理
         }
 
     }
 
     @Override
     public void update(Observable o, Object arg) {
-        final Server server = ExtendLoader.getExtendLoader(Server.class).getExtension(DEFAULT_SPI_NAME);
+        Config config = ExtendLoader.getExtendLoader(Config.class).getExtension(DEFAULT_SPI_NAME);
+        ApplicationProperties applicationProperties = config.configBean(ApplicationProperties.class);
+        final Server server = ExtendLoader.getExtendLoader(Server.class).getExtension(applicationProperties.getServer());
+        server.setServerProperties(config.configBean(ServerProperties.class));
         if (arg.equals(Context.Event.STARTED)) {
             //解析方法，暴露ace服务。
-              Register register = ExtendLoader.getExtendLoader(Register.class).getExtension(DEFAULT_SPI_NAME);
-              Config config= ExtendLoader.getExtendLoader(Config.class).getExtension(DEFAULT_SPI_NAME);
-              register.addConfig(config);
-              //register.register();
-
+            Register register = ExtendLoader.getExtendLoader(Register.class).getExtension(applicationProperties.getRegister());
+            register.setConfig(config);
+            //register.register();
             Thread thread = new Thread(new Runnable() {
                 @Override
                 public void run() {

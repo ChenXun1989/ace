@@ -11,7 +11,9 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.AsciiString;
 import wiki.chenxun.ace.core.base.common.ExtendLoader;
+import wiki.chenxun.ace.core.base.config.Config;
 import wiki.chenxun.ace.core.base.remote.Dispatcher;
+import wiki.chenxun.ace.core.base.remote.ServerProperties;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -21,6 +23,7 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  */
 public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
 
+    public static final String APPLICATION_JSON = "application/json";
     /**
      * 请求分发与处理类
      */
@@ -43,7 +46,9 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
     private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
     public HttpServerInboundHandler() {
-        dispatcher = ExtendLoader.getExtendLoader(Dispatcher.class).getExtension(ExtendLoader.DEFAULT_SPI_NAME);
+        Config config = ExtendLoader.getExtendLoader(Config.class).getExtension(ExtendLoader.DEFAULT_SPI_NAME);
+        ServerProperties serverProperties = config.configBean(ServerProperties.class);
+        dispatcher = ExtendLoader.getExtendLoader(Dispatcher.class).getExtension(serverProperties.getDispatch());
     }
 
 
@@ -75,15 +80,15 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
     /**
      * 响应HTTP的请求
      *
-     * @param ctx  ChannelHandlerContext
-     * @param req  FullHttpRequest
+     * @param ctx     ChannelHandlerContext
+     * @param req     FullHttpRequest
      * @param jsonStr String
      */
     private void sendResponse(ChannelHandlerContext ctx, FullHttpRequest req, String jsonStr) {
         boolean keepAlive = HttpUtil.isKeepAlive(req);
         byte[] jsonByteByte = jsonStr.getBytes();
         FullHttpResponse response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(jsonByteByte));
-        response.headers().set(CONTENT_TYPE, "application/json");
+        response.headers().set(CONTENT_TYPE, APPLICATION_JSON);
         response.headers().setInt(CONTENT_LENGTH, response.content().readableBytes());
         if (!keepAlive) {
             ctx.write(response).addListener(ChannelFutureListener.CLOSE);
@@ -100,4 +105,6 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
         System.err.println(cause.getStackTrace());
         super.exceptionCaught(ctx, cause);
     }
+
+
 }

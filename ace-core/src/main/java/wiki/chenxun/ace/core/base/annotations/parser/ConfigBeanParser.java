@@ -1,22 +1,17 @@
 package wiki.chenxun.ace.core.base.annotations.parser;
 
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.expression.spel.ast.Projection;
+
 import wiki.chenxun.ace.core.base.annotations.ConfigBean;
 import wiki.chenxun.ace.core.base.common.ExtendLoader;
 import wiki.chenxun.ace.core.base.config.Config;
-import wiki.chenxun.ace.core.base.register.Register;
-import wiki.chenxun.ace.core.base.register.zookeeper.ZookeeperRegister;
+
 
 import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.DoubleSummaryStatistics;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -53,47 +48,49 @@ public class ConfigBeanParser implements AnnotationParser {
     public Object parserConfigBean(Class cls, ResourceBundle resource) {
         ConfigBean configBean = (ConfigBean) cls.getAnnotation(ConfigBean.class);
         String prefix = configBean.value();
+        Object obj = null;
+        BeanInfo beanInfo = null;
         try {
-            Object obj = cls.newInstance();
-            BeanInfo beanInfo = Introspector.getBeanInfo(cls);
-            PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-            for (PropertyDescriptor propertyDescriptor : pds) {
-                String key = prefix + "." + propertyDescriptor.getName();
-                Method method = propertyDescriptor.getWriteMethod();
-                if (method != null) {
-                    String value=resource.getString(key);
-                    Class paramClass=method.getParameterTypes()[0];
-                    method.invoke(obj,parse(paramClass,value));
-                }
-
-            }
-            return obj;
-        } catch (IntrospectionException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            obj = cls.newInstance();
+            beanInfo = Introspector.getBeanInfo(cls);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return null;
+        //MissingResourceException
+
+        PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+        for (PropertyDescriptor propertyDescriptor : pds) {
+            String key = prefix + "." + propertyDescriptor.getName();
+            Method method = propertyDescriptor.getWriteMethod();
+            if (method != null) {
+                try {
+                    String value = resource.getString(key);
+                    Class paramClass = method.getParameterTypes()[0];
+                    method.invoke(obj, parse(paramClass, value));
+                } catch (MissingResourceException e) {
+                    //TODO： 记录日志
+                } catch (IllegalAccessException e) {
+                    //TODO： 记录日志
+                } catch (InvocationTargetException e) {
+                    //TODO： 记录日志
+                }
+            }
+
+        }
+        return obj;
     }
 
-    private Object parse(Class cls,String value){
-        if(int.class.equals(cls)){
+    private Object parse(Class cls, String value) {
+        if (int.class.equals(cls)) {
             return Integer.parseInt(value);
-        }else if(long.class.equals(cls)){
+        } else if (long.class.equals(cls)) {
             return Long.parseLong(value);
-        }
-        else if(double.class.equals(cls)){
+        } else if (double.class.equals(cls)) {
             return Double.parseDouble(value);
-        }
-        else if(float.class.equals(cls)){
-             return Float.parseFloat(value);
-        }
-        else if(byte.class.equals(cls)){
-             return Byte.parseByte(value);
+        } else if (float.class.equals(cls)) {
+            return Float.parseFloat(value);
+        } else if (byte.class.equals(cls)) {
+            return Byte.parseByte(value);
         }
         return value;
 

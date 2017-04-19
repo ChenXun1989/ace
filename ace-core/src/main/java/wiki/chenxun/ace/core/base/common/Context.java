@@ -206,7 +206,6 @@ public final class Context {
      * @param currentContainer 当前ioc容器
      */
     public static void setCurrentContainer(Container currentContainer) {
-
         Context.currentContainer = currentContainer;
         containerObservable.addObserver(ExtendLoader.getExtendLoader(Container.class));
 

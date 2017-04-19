@@ -1,11 +1,10 @@
-package wiki.chenxun.ace.core.base.container;
+package wiki.chenxun.ace.core.base.container.spring;
 
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import wiki.chenxun.ace.core.base.common.ExtendLoader;
 import wiki.chenxun.ace.core.base.config.Config;
+import wiki.chenxun.ace.core.base.container.Container;
+import wiki.chenxun.ace.core.base.container.spring.ConfigBeanFactoryPostProcessor;
 
 import java.util.ArrayList;
 import java.util.List;

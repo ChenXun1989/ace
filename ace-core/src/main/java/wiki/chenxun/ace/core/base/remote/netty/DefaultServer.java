@@ -1,6 +1,7 @@
 package wiki.chenxun.ace.core.base.remote.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -8,6 +9,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import wiki.chenxun.ace.core.base.remote.Server;
+import wiki.chenxun.ace.core.base.remote.ServerProperties;
 
 import java.io.IOException;
 
@@ -16,14 +18,8 @@ import java.io.IOException;
  */
 
 public class DefaultServer implements Server {
-    /**
-     * 请求等待队列长度
-     */
-    public static final int BACK_SIZE = 1024;
-    /**
-     * http协议默认端口
-     */
-    private final int port = 8080;
+
+    private ServerProperties serverProperties;
     /**
      * io线程
      */
@@ -49,9 +45,10 @@ public class DefaultServer implements Server {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelInitializer)
-                    .option(ChannelOption.SO_BACKLOG, BACK_SIZE)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
-            ChannelFuture future = bootstrap.bind(port).sync();
+                    .option(ChannelOption.SO_BACKLOG, serverProperties.getBackSize())
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            ChannelFuture future = bootstrap.bind(serverProperties.getPort()).sync();
             System.out.println("ace server starter !!!");
             future.channel().closeFuture().sync();
         } finally {
@@ -59,6 +56,10 @@ public class DefaultServer implements Server {
         }
 
 
+    }
+
+    public void setServerProperties(ServerProperties serverProperties) {
+        this.serverProperties = serverProperties;
     }
 
     /**
