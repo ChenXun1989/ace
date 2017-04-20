@@ -3,7 +3,6 @@ package wiki.chenxun.ace.core.base.config;
 import wiki.chenxun.ace.core.base.annotations.Spi;
 
 import java.util.Collection;
-import java.util.Observable;
 
 /**
  * @Description: Created by chenxun on 2017/4/16.
@@ -11,20 +10,23 @@ import java.util.Observable;
 @Spi("default")
 public interface Config {
 
-    public static final String DEFAULT_PATH = "application";
+    /**
+     * DEFAULT_PATH
+     */
+     String DEFAULT_PATH = "application";
 
     /**
      * 获取配置
      *
      * @param cls
      * @param <T>
-     * @return
+     * @return configBean
      */
     <T> T configBean(Class<T> cls);
 
     /**
      * 获取配置列表
-     * @return
+     * @return Collection
      */
     public Collection<Object> lists();
 

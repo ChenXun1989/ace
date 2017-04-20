@@ -43,7 +43,7 @@ public class AceServiceParser implements AnnotationParser {
     private void initAceServiceMethod(Class<?> clazz, Method method) throws IOException {
         for (AceHttpMethod aceHttpMethod : AceHttpMethod.values()) {
             if (method.isAnnotationPresent(aceHttpMethod.getAnnotationClazz())) {
-                Context.putAceServiceMethodMap(clazz, aceHttpMethod,method);
+                Context.putAceServiceMethodMap(clazz, aceHttpMethod, method);
                 return;
             }
         }

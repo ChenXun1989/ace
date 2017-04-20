@@ -8,7 +8,6 @@ import org.apache.zookeeper.data.Stat;
 import wiki.chenxun.ace.core.base.config.Config;
 import wiki.chenxun.ace.core.base.register.Register;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Date;
@@ -17,7 +16,7 @@ import java.util.Observable;
 /**
  * @Description: Created by chenxun on 2017/4/12.
  */
-public  class ZookeeperRegister  extends Observable  implements Register {
+public class ZookeeperRegister extends Observable implements Register {
 
     private ZooKeeper zooKeeper;
 
@@ -30,7 +29,6 @@ public  class ZookeeperRegister  extends Observable  implements Register {
         createRootNode();
 
     }
-
 
 
     private void createRootNode() {
@@ -53,6 +51,7 @@ public  class ZookeeperRegister  extends Observable  implements Register {
     @Override
     public void register() {
 
+
     }
 
 
@@ -63,7 +62,7 @@ public  class ZookeeperRegister  extends Observable  implements Register {
 
     @Override
     public void setConfig(Config config) {
-         this.config=config;
+        this.config = config;
     }
 
 

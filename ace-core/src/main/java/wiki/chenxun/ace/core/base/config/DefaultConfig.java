@@ -1,9 +1,6 @@
 package wiki.chenxun.ace.core.base.config;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
+import java.io.IOException;;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +11,9 @@ import java.util.Properties;
  */
 public class DefaultConfig implements Config {
 
+    /**
+     * 配置类实例
+     */
     private Map<Class, Object> configInstances = new HashMap<>();
 
     @Override
@@ -22,8 +22,8 @@ public class DefaultConfig implements Config {
     }
 
     @Override
-    public Collection<Object> lists(){
-       return configInstances.values();
+    public Collection<Object> lists() {
+        return configInstances.values();
     }
 
     @Override
@@ -36,7 +36,7 @@ public class DefaultConfig implements Config {
         // TODO: 写入文件
         Properties props = new Properties();
         try {
-            props.load(Config.class.getClassLoader().getResourceAsStream(Config.DEFAULT_PATH+".properties"));
+            props.load(Config.class.getClassLoader().getResourceAsStream(Config.DEFAULT_PATH + ".properties"));
 
 
         } catch (IOException e) {

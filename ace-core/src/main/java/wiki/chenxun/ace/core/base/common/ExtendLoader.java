@@ -289,7 +289,8 @@ public final class ExtendLoader<T> implements Observer {
         if (arg.equals(Context.Event.STARTED)) {
             //解析方法，暴露ace服务。
             Register register = ExtendLoader.getExtendLoader(Register.class).getExtension(applicationProperties.getRegister());
-            register.setConfig(config);
+
+            // register.setConfig(config);
             //register.register();
             Thread thread = new Thread(new Runnable() {
                 @Override

@@ -62,6 +62,11 @@ public class DefaultServer implements Server {
         this.serverProperties = serverProperties;
     }
 
+    @Override
+    public void update() {
+
+    }
+
     /**
      * 关闭服务
      *

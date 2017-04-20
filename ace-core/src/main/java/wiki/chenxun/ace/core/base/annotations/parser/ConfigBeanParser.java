@@ -20,6 +20,9 @@ import java.util.Set;
  */
 public class ConfigBeanParser implements AnnotationParser {
 
+    /**
+     * Config
+     */
     private Config config;
 
 
@@ -27,11 +30,18 @@ public class ConfigBeanParser implements AnnotationParser {
         init();
     }
 
+    /**
+     * init
+     */
     private void init() {
         config = ExtendLoader.getExtendLoader(Config.class).getExtension(ExtendLoader.DEFAULT_SPI_NAME);
 
     }
 
+    /**
+     * buildResource
+     * @return ResourceBundle
+     */
     private ResourceBundle buildResource() {
         return ResourceBundle.getBundle(Config.DEFAULT_PATH);
     }
@@ -45,6 +55,12 @@ public class ConfigBeanParser implements AnnotationParser {
         }
     }
 
+    /**
+     * parserConfigBean
+     * @param cls  Class
+     * @param resource ResourceBundle
+     * @return ObjectObject
+     */
     public Object parserConfigBean(Class cls, ResourceBundle resource) {
         ConfigBean configBean = (ConfigBean) cls.getAnnotation(ConfigBean.class);
         String prefix = configBean.value();
@@ -80,6 +96,12 @@ public class ConfigBeanParser implements AnnotationParser {
         return obj;
     }
 
+    /**
+     * parse
+     * @param cls Class
+     * @param value String
+     * @return ObjectObject
+     */
     private Object parse(Class cls, String value) {
         if (int.class.equals(cls)) {
             return Integer.parseInt(value);

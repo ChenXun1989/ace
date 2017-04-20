@@ -10,7 +10,7 @@ import wiki.chenxun.ace.core.base.annotations.ConfigBean;
 @ConfigBean(ApplicationProperties.PREFIX)
 public class ApplicationProperties {
 
-    public static final String PREFIX="application";
+    public static final String PREFIX = "application";
 
     private String container;
 

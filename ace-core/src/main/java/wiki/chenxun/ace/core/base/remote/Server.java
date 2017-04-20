@@ -19,6 +19,9 @@ public interface Server extends Closeable {
 
     void setServerProperties(ServerProperties serverProperties);
 
+    void update();
+
+
 
 
 }

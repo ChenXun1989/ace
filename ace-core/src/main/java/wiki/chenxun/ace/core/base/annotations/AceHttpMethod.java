@@ -26,6 +26,7 @@ public enum AceHttpMethod {
 
     /**
      * 获取对应的注解类型
+     *
      * @return 注解类型
      */
     public Class<? extends Annotation> getAnnotationClazz() {
@@ -42,6 +43,11 @@ public enum AceHttpMethod {
         }
     }
 
+    /**
+     * getAceHttpMethod
+     * @param httpMethodStr String
+     * @return AceHttpMethod
+     */
     public static AceHttpMethod getAceHttpMethod(String httpMethodStr) {
         AceHttpMethod aceHttpMethod;
         if ("GET".equals(httpMethodStr)) {
@@ -50,7 +56,7 @@ public enum AceHttpMethod {
             aceHttpMethod = AceHttpMethod.POST;
         } else if ("PUT".equals(httpMethodStr)) {
             aceHttpMethod = AceHttpMethod.PUT;
-        }else if ("DELETE".equals(httpMethodStr)) {
+        } else if ("DELETE".equals(httpMethodStr)) {
             aceHttpMethod = AceHttpMethod.DELETE;
         } else {
             throw new RuntimeException("暂不支持的 HTTP Method");
