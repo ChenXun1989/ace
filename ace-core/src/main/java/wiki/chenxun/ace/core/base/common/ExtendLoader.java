@@ -1,33 +1,40 @@
 package wiki.chenxun.ace.core.base.common;
 
+import wiki.chenxun.ace.core.base.annotations.ConfigBean;
 import wiki.chenxun.ace.core.base.annotations.Spi;
 import wiki.chenxun.ace.core.base.config.Config;
-import wiki.chenxun.ace.core.base.container.Container;
-import wiki.chenxun.ace.core.base.exception.ExtendLoadException;
-import wiki.chenxun.ace.core.base.register.Register;
-import wiki.chenxun.ace.core.base.remote.Server;
+import wiki.chenxun.ace.core.base.config.ConfigBeanAware;
+import wiki.chenxun.ace.core.base.config.ConfigBeanParser;
+import wiki.chenxun.ace.core.base.config.DefaultConfig;
 
-import java.beans.BeanInfo;
+import wiki.chenxun.ace.core.base.exception.ExtendLoadException;
+
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Enumeration;
-import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * 扩展点加载类
  *
  * @param <T> spi扩展点
  */
-public final class ExtendLoader<T> implements Observer {
+public final class ExtendLoader<T> {
+
+    /**
+     * 扩展类加载全局容器
+     */
+    private static ConcurrentHashMap<Class<?>, ExtendLoader<?>> extendLoaderMap;
+
+    static {
+        extendLoaderMap = new ConcurrentHashMap<>();
+    }
 
     /**
      * spi 默认值
@@ -37,18 +44,15 @@ public final class ExtendLoader<T> implements Observer {
      * spi 文件位置
      */
     private static final String ACE_DIRECTORY = "META-INF/ace/";
-    /**
-     * 扩展类加载全局容器
-     */
-    private static final ConcurrentMap<Class<?>, ExtendLoader<?>> EXTEND_LOADERS = new ConcurrentHashMap();
+
     /**
      * 扩展点多个扩展实例容器
      */
-    private final ConcurrentHashMap<String, Object> extendInstances = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Object> extendInstances;
     /**
      * 一个扩展点对应的多个扩展class
      */
-    private final ConcurrentHashMap<String, Class> extendClasses = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, Class> extendClasses;
     /**
      * 扩展点对应的默认扩展
      */
@@ -60,7 +64,10 @@ public final class ExtendLoader<T> implements Observer {
 
     private ExtendLoader(Class type) {
         this.type = type;
+        extendInstances = new ConcurrentHashMap<>();
+        extendClasses = new ConcurrentHashMap<>();
     }
+
 
     /**
      * 获取扩展点的扩展加载类
@@ -79,10 +86,11 @@ public final class ExtendLoader<T> implements Observer {
         if (!withExtensionAnnotation(type)) {
             throw new ExtendLoadException("class must has @spi  ");
         }
-        ExtendLoader loader = EXTEND_LOADERS.get(type);
+
+        ExtendLoader loader = extendLoaderMap.get(type);
         if (loader == null) {
-            EXTEND_LOADERS.putIfAbsent(type, new ExtendLoader(type));
-            loader = (ExtendLoader) EXTEND_LOADERS.get(type);
+            extendLoaderMap.putIfAbsent(type, new ExtendLoader(type));
+            loader = (ExtendLoader) extendLoaderMap.get(type);
         }
 
         return loader;
@@ -115,19 +123,19 @@ public final class ExtendLoader<T> implements Observer {
      * @return 扩展点实例
      */
     public T getExtension(String name) {
-        if (name == null && name.trim().length() == 0) {
-            throw new IllegalArgumentException("name  must not blank ");
-        }
         if (cachedDefaultName == null) {
             this.loadExtensionClasses();
         }
-        if (DEFAULT_SPI_NAME.equals(name)) {
+        if (name == null || name.trim().length() == 0) {
             name = cachedDefaultName;
         }
-        T t = (T) extendInstances.get(name);
+        if (DEFAULT_SPI_NAME.equals(name)) {
+            name = this.cachedDefaultName;
+        }
+        T t = (T) this.extendInstances.get(name);
         if (t == null) {
             Class cls = extendClasses.get(name);
-            extendInstances.putIfAbsent(name, createExtension(name));
+            this.extendInstances.putIfAbsent(name, createExtension(name));
             t = (T) extendInstances.get(name);
         }
         return t;
@@ -146,12 +154,58 @@ public final class ExtendLoader<T> implements Observer {
         }
         try {
             T t = (T) clazz.newInstance();
-            injectProperty(t);
+            injectConfigBean(t);
+            // injectProperty(t);
             return t;
         } catch (Exception e) {
             throw new ExtendLoadException("extend instance fail  ", e);
         }
     }
+
+    /**
+     * 注入configBean
+     *
+     * @param object
+     */
+    private void injectConfigBean(Object object) {
+
+        Config config = DefaultConfig.INSTANCE;
+        Type[] types = this.type.getGenericInterfaces();
+        for (Type interfaceTyp : types) {
+            if (interfaceTyp instanceof ParameterizedType) {
+                Type t = ((ParameterizedType) interfaceTyp).getRawType();
+                if (ConfigBeanAware.class.getName().equals(t.getTypeName())) {
+                    Type a = ((ParameterizedType) interfaceTyp).getActualTypeArguments()[0];
+                    try {
+                        Class cls = Class.forName(a.getTypeName());
+                        ConfigBeanParser configBeanParser = config.configBeanParser(cls);
+                        if (configBeanParser == null) {
+                            configBeanParser = new ConfigBeanParser();
+                            if (cls.isAnnotationPresent(ConfigBean.class)) {
+                                configBeanParser.parser(cls);
+                                config.add(configBeanParser);
+                            } else {
+                                throw new ExtendLoadException(cls + "  must has @ConfigBean ");
+                            }
+                        }
+                        Method method = ConfigBeanAware.class.getMethod("setConfigBean",Object.class);
+                        method.invoke(object, configBeanParser.getConfigBean());
+                        configBeanParser.addObserver((Observer) object);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        }
+    }
+
 
     /**
      * 给扩展点实例注入ioc容器对象
@@ -163,19 +217,19 @@ public final class ExtendLoader<T> implements Observer {
      * @throws IllegalAccessException    IllegalAccessException
      */
     private <T> void injectProperty(T t) throws IntrospectionException, InvocationTargetException, IllegalAccessException {
-        Container container = Context.getCurrentContainer();
-        BeanInfo beanInfo = Introspector.getBeanInfo(t.getClass());
-        PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-        if (pds != null && pds.length > 0) {
-            for (PropertyDescriptor pd : pds) {
-                Method method = pd.getWriteMethod();
-                if (method == null) {
-                    continue;
-                }
-                Object obj = container.getBean(pd.getPropertyType(), pd.getName());
-                method.invoke(t, obj);
-            }
-        }
+//        Container container = Context.getCurrentContainer();
+//        BeanInfo beanInfo = Introspector.getBeanInfo(t.getClass());
+//        PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+//        if (pds != null && pds.length > 0) {
+//            for (PropertyDescriptor pd : pds) {
+//                Method method = pd.getWriteMethod();
+//                if (method == null) {
+//                    continue;
+//                }
+//                Object obj = container.getBean(pd.getPropertyType(), pd.getName());
+//                method.invoke(t, obj);
+//            }
+//        }
 
     }
 
@@ -250,56 +304,23 @@ public final class ExtendLoader<T> implements Observer {
                                         extendClasses.putIfAbsent(t2, clazz);
 
                                     }
-                                } catch (Throwable var28) {
-                                    IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: "
-                                            + this.type + ", class line: " + line + ") in "
-                                            + url + ", cause: " + var28.getMessage(), var28);
-
+                                } catch (Throwable th) {
+                                    //TODO: 异常处理
                                 }
                             }
                         } finally {
                             t1.close();
                         }
-                    } catch (Throwable var30) {
-
+                    } catch (Throwable th) {
+                        //TODO: 异常处理
                     }
                 }
             }
-        } catch (Throwable var31) {
-
+        } catch (Throwable th) {
+            //TODO: 异常处理
         }
 
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
-        final Server server = ExtendLoader.getExtendLoader(Server.class).getExtension(DEFAULT_SPI_NAME);
-        if (arg.equals(Context.Event.STARTED)) {
-            //解析方法，暴露ace服务。
-              Register register = ExtendLoader.getExtendLoader(Register.class).getExtension(DEFAULT_SPI_NAME);
-              Config config= ExtendLoader.getExtendLoader(Config.class).getExtension(DEFAULT_SPI_NAME);
-              register.addConfig(config);
-              //register.register();
 
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        server.start();
-
-                    } catch (Exception e) {
-                        // TODO: 异常处理
-                    }
-                }
-            });
-            thread.setDaemon(true);
-            thread.start();
-        } else if (arg.equals(Context.Event.STOPED)) {
-            try {
-                server.close();
-            } catch (IOException e) {
-                // 异常处理
-            }
-        }
-    }
 }

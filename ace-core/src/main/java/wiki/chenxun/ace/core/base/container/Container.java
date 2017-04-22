@@ -8,7 +8,7 @@ import wiki.chenxun.ace.core.base.annotations.Spi;
  * @Description: Created by chenxun on 2017/4/10.
  */
 @Spi("spring")
-public interface Container {
+public interface Container   {
 
     /**
      * aceServicePackage
@@ -20,7 +20,7 @@ public interface Container {
      *
      * @param args 启动参数透传
      */
-    void init(String[] args);
+    void init(String... packages);
 
     /**
      * 容器开始

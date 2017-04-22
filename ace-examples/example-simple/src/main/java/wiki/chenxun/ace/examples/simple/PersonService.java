@@ -8,5 +8,5 @@ public interface PersonService {
 
      Person test(String name,int age);
 
-
+     Person test2();
 }

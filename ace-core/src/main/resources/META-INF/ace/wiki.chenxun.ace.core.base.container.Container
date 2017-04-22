@@ -1,1 +1,1 @@
-spring=wiki.chenxun.ace.core.base.container.SpringContainer
+spring=wiki.chenxun.ace.core.base.container.spring.SpringContainer

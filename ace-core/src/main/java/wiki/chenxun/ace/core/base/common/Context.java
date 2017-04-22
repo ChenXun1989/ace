@@ -2,24 +2,21 @@ package wiki.chenxun.ace.core.base.common;
 
 import wiki.chenxun.ace.core.base.annotations.AceHttpMethod;
 import wiki.chenxun.ace.core.base.annotations.AceService;
-import wiki.chenxun.ace.core.base.container.Container;
 import wiki.chenxun.ace.core.base.remote.MethodDefine;
 import wiki.chenxun.ace.core.base.support.ReflectUtil;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Observable;
 import java.util.concurrent.ConcurrentHashMap;
+
 
 /**
  * @Description: Created by chenxun on 2017/4/10.
  */
 public final class Context {
-    /**
-     * path - Class
-     */
-    private static final Map<String, Class<?>> ACESERVICE_MAP = new ConcurrentHashMap<String, Class<?>>();
+
     /**
      * class -> AceHttpMethod -> Method
      */
@@ -27,27 +24,27 @@ public final class Context {
             new ConcurrentHashMap<Class<?>, Map<AceHttpMethod, MethodDefine>>();
 
     /**
-     * className - > AceService Bean
-     */
-    private static final Map<String, String> ACESERVICE_BEAN_NAME_MAP = new ConcurrentHashMap<String, String>();
-
-    /**
-     * Observable
-     */
-    private static ContainerObservable containerObservable = new ContainerObservable();
-    /**
      * 是否初始化完成
      * 防止解析冲突
      */
     private static boolean initAnalyzed = false;
     /**
-     * 当前容器
+     *
      */
-    private static Container currentContainer;
+    private static final Map<String, AceServiceBean> ACE_SERVICE_BEAN_MAP = new ConcurrentHashMap<>();
 
-    private Context() {
 
+    public static AceServiceBean getAceServiceBean(String uri) {
+        String aceUri = uri.split("\\?")[0];
+        return ACE_SERVICE_BEAN_MAP.get(aceUri);
     }
+
+    public static Collection<AceServiceBean> beans() {
+        return ACE_SERVICE_BEAN_MAP.values();
+    }
+
+    ;
+
 
     /**
      * 标识解析元数据完成
@@ -82,26 +79,22 @@ public final class Context {
 
 
     /**
-     * 初始化aceServiceMap
-     *
-     * @param aceService AceService
-     * @param clazz      class
+     * @param aceService
+     * @param aceServiceBean
      */
-    public static void putAceServiceMap(AceService aceService, Class<?> clazz) {
+    public static void putAceServiceMap(AceServiceBean aceServiceBean) {
         if (!initAnalyzed) {
-            String uri = aceService.path();
-            if (!uri.startsWith("/")) {
+            String uri = aceServiceBean.getPath();
+            if (uri != null && !uri.startsWith("/")) {
                 throw new RuntimeException("自定义path 须  / 开头");
             }
-            String aceUri = Context.getClassUri(clazz);
-            if (ACESERVICE_MAP.containsKey(uri) || ACESERVICE_MAP.containsKey(aceUri)) {
+            String aceUri = Context.getClassUri(aceServiceBean.getInstance().getClass());
+            if (ACE_SERVICE_BEAN_MAP.containsKey(uri) || ACE_SERVICE_BEAN_MAP.containsKey(aceUri)) {
                 throw new RuntimeException("aceService Path 重复定义异常");
             }
             //TODO ace uri 定义
-            System.out.println("ACE Service 加载：" + uri + "\t->\t" + clazz.getName());
-            ACESERVICE_MAP.put(uri, clazz);
-            ACESERVICE_MAP.put(aceUri, clazz);
-            ACESERVICE_BEAN_NAME_MAP.put(aceUri, aceService.value().equals("") ? clazz.getCanonicalName() : aceService.value());
+            ACE_SERVICE_BEAN_MAP.put(uri, aceServiceBean);
+            ACE_SERVICE_BEAN_MAP.put(aceUri, aceServiceBean);
         }
     }
 
@@ -113,44 +106,11 @@ public final class Context {
      * @param aceHttpMethod ace http method
      * @return method define
      */
-    public static MethodDefine getMethodDefine(String uri, AceHttpMethod aceHttpMethod) {
-        return ACESERVICE_METHOD_MAP.get(getAceClass(uri)).get(aceHttpMethod);
+    public static MethodDefine getMethodDefine(AceServiceBean aceServiceBean, AceHttpMethod aceHttpMethod) {
+        Class cls = aceServiceBean.getInstance().getClass();
+        return ACESERVICE_METHOD_MAP.get(cls).get(aceHttpMethod);
     }
 
-
-
-    private static Class<?> getAceClass(String uri) {
-        return ACESERVICE_MAP.get(getAceUri(uri));
-    }
-
-    /**
-     * 获取系统默认aceUri
-     *
-     * @param uri uri
-     * @return uri
-     */
-    private static String getAceUri(String uri) {
-        String aceUri = uri.split("\\?")[0];
-        if (!ACESERVICE_MAP.containsKey(aceUri)) {
-            aceUri = aceUri.substring(1).replace("/", ".");
-            if (ACESERVICE_MAP.containsKey(aceUri)) {
-                aceUri = Context.getClassUri(ACESERVICE_MAP.get(aceUri));
-            } else {
-                throw new RuntimeException("未找到实现注入：" + aceUri);
-            }
-        }
-        return aceUri;
-    }
-
-    /**
-     * uri获取实例化对象
-     *
-     * @param uri
-     * @return
-     */
-    public static Object getBean(String uri) {
-        return Context.getBean(getAceClass(uri));
-    }
 
     /**
      * 获取内部使用的class uri
@@ -191,69 +151,5 @@ public final class Context {
         return methodDefine;
     }
 
-    /**
-     * getCurrentContainer
-     *
-     * @return Container
-     */
-    public static Container getCurrentContainer() {
-        return currentContainer;
-    }
 
-    /**
-     * setCurrentContainer
-     *
-     * @param currentContainer 当前ioc容器
-     */
-    public static void setCurrentContainer(Container currentContainer) {
-
-        Context.currentContainer = currentContainer;
-        containerObservable.addObserver(ExtendLoader.getExtendLoader(Container.class));
-
-    }
-
-    /**
-     * 通知观察者
-     *
-     * @param event 事件类型
-     */
-    public static void notifyObservers(Event event) {
-        containerObservable.setChanged();
-        containerObservable.notifyObservers(event);
-    }
-
-    /**
-     * ioc容器里面获取对象
-     *
-     * @param t   ioc容器里面的bean
-     * @param <T> ioc容器里面的bean
-     * @return ioc容器里面的bean
-     */
-    public static <T> T getBean(Class<T> t) {
-        return currentContainer.getBean(t);
-    }
-
-    /**
-     * 事件类型
-     */
-    public enum Event {
-        /**
-         * 已开始
-         */
-        STARTED,
-        /**
-         * 已结束
-         */
-        STOPED;
-    }
-
-    /**
-     * Observable
-     */
-    private static class ContainerObservable extends Observable {
-        @Override
-        public synchronized void setChanged() {
-            super.setChanged();
-        }
-    }
 }

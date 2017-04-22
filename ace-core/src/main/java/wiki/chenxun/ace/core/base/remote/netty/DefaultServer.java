@@ -1,29 +1,26 @@
 package wiki.chenxun.ace.core.base.remote.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import wiki.chenxun.ace.core.base.common.AceServerConfig;
 import wiki.chenxun.ace.core.base.remote.Server;
 
 import java.io.IOException;
+import java.util.Observable;
 
 /**
  * @Description: Created by chenxun on 2017/4/7.
  */
-
 public class DefaultServer implements Server {
-    /**
-     * 请求等待队列长度
-     */
-    public static final int BACK_SIZE = 1024;
-    /**
-     * http协议默认端口
-     */
-    private final int port = 8080;
+
+    private AceServerConfig aceServerConfig;
+
     /**
      * io线程
      */
@@ -31,7 +28,7 @@ public class DefaultServer implements Server {
     /**
      * work线程
      */
-    private EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private EventLoopGroup workerGroup = new NioEventLoopGroup(100);
 
     /**
      * channelHandler注册
@@ -49,10 +46,11 @@ public class DefaultServer implements Server {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelInitializer)
-                    .option(ChannelOption.SO_BACKLOG, BACK_SIZE)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true);
-            ChannelFuture future = bootstrap.bind(port).sync();
-            System.out.println("ace server starter !!!");
+                    .option(ChannelOption.SO_BACKLOG, aceServerConfig.getBackSize())
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            ChannelFuture future = bootstrap.bind(aceServerConfig.getPort()).sync();
+            System.out.println("ace server starter on port : " + aceServerConfig.getPort());
             future.channel().closeFuture().sync();
         } finally {
             close();
@@ -61,13 +59,24 @@ public class DefaultServer implements Server {
 
     }
 
+
     /**
      * 关闭服务
      *
      * @throws IOException io异常
      */
-    public void close() throws IOException {
+    public void close()   {
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
+    }
+
+    @Override
+    public void setConfigBean(AceServerConfig aceServerConfig) {
+        this.aceServerConfig = aceServerConfig;
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+
     }
 }

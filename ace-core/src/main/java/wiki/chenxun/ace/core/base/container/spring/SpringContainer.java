@@ -1,6 +1,10 @@
-package wiki.chenxun.ace.core.base.container;
+package wiki.chenxun.ace.core.base.container.spring;
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import wiki.chenxun.ace.core.base.common.ExtendLoader;
+import wiki.chenxun.ace.core.base.config.Config;
+import wiki.chenxun.ace.core.base.config.DefaultConfig;
+import wiki.chenxun.ace.core.base.container.Container;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,31 +15,23 @@ import java.util.List;
 public class SpringContainer implements Container {
 
     /**
-     * 默认的ace 核心包路径
-     */
-    public static final String ACE_CORE_PACKAGE = "wiki.chenxun.ace.core";
-    /**
      * spring 容器上下文
      */
     private AnnotationConfigApplicationContext applicationContext;
 
     @Override
-    public void init(String[] args) {
-        List<String> scanPackageList = new ArrayList<>();
-        scanPackageList.add(ACE_CORE_PACKAGE);
-        if (null != args && args.length > 0) {
-            for (String arg : args) {
-                if (arg.startsWith(ACE_SERVICE_PACKAGE)) {
-                    scanPackageList.add(arg.substring(arg.indexOf(ACE_SERVICE_PACKAGE) + ACE_SERVICE_PACKAGE.length()));
-                }
-            }
-        }
-        applicationContext =
-                new AnnotationConfigApplicationContext(scanPackageList.toArray(new String[scanPackageList.size()]));
+    public void init(String... packages) {
+        applicationContext = new AnnotationConfigApplicationContext();
+        Config config= DefaultConfig.INSTANCE;
+        ConfigBeanFactoryPostProcessor configBeanFactoryPostProcessor = new ConfigBeanFactoryPostProcessor(config);
+        applicationContext.addBeanFactoryPostProcessor(configBeanFactoryPostProcessor);
+        applicationContext.scan(packages);
+
     }
 
     @Override
     public void start() {
+        applicationContext.refresh();
         applicationContext.start();
     }
 

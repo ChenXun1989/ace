@@ -1,0 +1,26 @@
+2017-04-16 12:30:01 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column "name" not found [42122-194]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:345)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.jdbc.JdbcResultSet.getColumnIndex(JdbcResultSet.java:3172)
+	at org.h2.jdbc.JdbcResultSet.get(JdbcResultSet.java:3234)
+	at org.h2.jdbc.JdbcResultSet.getString(JdbcResultSet.java:308)
+	at wiki.chenxun.ace.mybatis.test.TestH2.testH2(TestH2.java:59)
+	at wiki.chenxun.ace.mybatis.test.TestH2.main(TestH2.java:76)
+2017-04-16 12:31:34 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLException: Column count does not match; SQL statement:
+INSERT INTO t_person VALUES( 'this is my first program!') [21002-194]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:345)
+	at org.h2.message.DbException.get(DbException.java:179)
+	at org.h2.message.DbException.get(DbException.java:155)
+	at org.h2.message.DbException.get(DbException.java:144)
+	at org.h2.command.dml.Insert.prepare(Insert.java:265)
+	at org.h2.command.Parser.prepareCommand(Parser.java:261)
+	at org.h2.engine.Session.prepareLocal(Session.java:564)
+	at org.h2.engine.Session.prepareCommand(Session.java:505)
+	at org.h2.jdbc.JdbcConnection.prepareCommand(JdbcConnection.java:1204)
+	at org.h2.jdbc.JdbcStatement.executeInternal(JdbcStatement.java:170)
+	at org.h2.jdbc.JdbcStatement.execute(JdbcStatement.java:158)
+	at wiki.chenxun.ace.mybatis.test.TestH2.testH2(TestH2.java:53)
+	at wiki.chenxun.ace.mybatis.test.TestH2.main(TestH2.java:76)

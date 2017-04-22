@@ -8,4 +8,6 @@ public interface ShutDownClearer  {
      * 进程结束前清理资源
      */
     void clear();
+
+
 }
