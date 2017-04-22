@@ -1,25 +1,22 @@
 package wiki.chenxun.ace.core.base.common;
 
+import wiki.chenxun.ace.core.base.annotations.ConfigBean;
 import wiki.chenxun.ace.core.base.annotations.Spi;
 import wiki.chenxun.ace.core.base.config.Config;
-import wiki.chenxun.ace.core.base.container.ApplicationProperties;
-import wiki.chenxun.ace.core.base.container.Container;
-import wiki.chenxun.ace.core.base.exception.ExtendLoadException;
-import wiki.chenxun.ace.core.base.register.Register;
-import wiki.chenxun.ace.core.base.remote.Server;
-import wiki.chenxun.ace.core.base.remote.ServerProperties;
+import wiki.chenxun.ace.core.base.config.ConfigBeanAware;
+import wiki.chenxun.ace.core.base.config.ConfigBeanParser;
+import wiki.chenxun.ace.core.base.config.DefaultConfig;
 
-import java.beans.BeanInfo;
+import wiki.chenxun.ace.core.base.exception.ExtendLoadException;
+
 import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Enumeration;
-import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -28,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @param <T> spi扩展点
  */
-public final class ExtendLoader<T> implements Observer {
+public final class ExtendLoader<T> {
 
     /**
      * 扩展类加载全局容器
@@ -157,13 +154,58 @@ public final class ExtendLoader<T> implements Observer {
         }
         try {
             T t = (T) clazz.newInstance();
-
+            injectConfigBean(t);
             // injectProperty(t);
             return t;
         } catch (Exception e) {
             throw new ExtendLoadException("extend instance fail  ", e);
         }
     }
+
+    /**
+     * 注入configBean
+     *
+     * @param object
+     */
+    private void injectConfigBean(Object object) {
+
+        Config config = DefaultConfig.INSTANCE;
+        Type[] types = this.type.getGenericInterfaces();
+        for (Type interfaceTyp : types) {
+            if (interfaceTyp instanceof ParameterizedType) {
+                Type t = ((ParameterizedType) interfaceTyp).getRawType();
+                if (ConfigBeanAware.class.getName().equals(t.getTypeName())) {
+                    Type a = ((ParameterizedType) interfaceTyp).getActualTypeArguments()[0];
+                    try {
+                        Class cls = Class.forName(a.getTypeName());
+                        ConfigBeanParser configBeanParser = config.configBeanParser(cls);
+                        if (configBeanParser == null) {
+                            configBeanParser = new ConfigBeanParser();
+                            if (cls.isAnnotationPresent(ConfigBean.class)) {
+                                configBeanParser.parser(cls);
+                                config.add(configBeanParser);
+                            } else {
+                                throw new ExtendLoadException(cls + "  must has @ConfigBean ");
+                            }
+                        }
+                        Method method = ConfigBeanAware.class.getMethod("setConfigBean",Object.class);
+                        method.invoke(object, configBeanParser.getConfigBean());
+                        configBeanParser.addObserver((Observer) object);
+                    } catch (ClassNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    } catch (InvocationTargetException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        }
+    }
+
 
     /**
      * 给扩展点实例注入ioc容器对象
@@ -175,19 +217,19 @@ public final class ExtendLoader<T> implements Observer {
      * @throws IllegalAccessException    IllegalAccessException
      */
     private <T> void injectProperty(T t) throws IntrospectionException, InvocationTargetException, IllegalAccessException {
-        Container container = Context.getCurrentContainer();
-        BeanInfo beanInfo = Introspector.getBeanInfo(t.getClass());
-        PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
-        if (pds != null && pds.length > 0) {
-            for (PropertyDescriptor pd : pds) {
-                Method method = pd.getWriteMethod();
-                if (method == null) {
-                    continue;
-                }
-                Object obj = container.getBean(pd.getPropertyType(), pd.getName());
-                method.invoke(t, obj);
-            }
-        }
+//        Container container = Context.getCurrentContainer();
+//        BeanInfo beanInfo = Introspector.getBeanInfo(t.getClass());
+//        PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+//        if (pds != null && pds.length > 0) {
+//            for (PropertyDescriptor pd : pds) {
+//                Method method = pd.getWriteMethod();
+//                if (method == null) {
+//                    continue;
+//                }
+//                Object obj = container.getBean(pd.getPropertyType(), pd.getName());
+//                method.invoke(t, obj);
+//            }
+//        }
 
     }
 
@@ -280,37 +322,5 @@ public final class ExtendLoader<T> implements Observer {
 
     }
 
-    @Override
-    public void update(Observable o, Object arg) {
-        Config config = ExtendLoader.getExtendLoader(Config.class).getExtension(DEFAULT_SPI_NAME);
-        ApplicationProperties applicationProperties = config.configBean(ApplicationProperties.class);
-        final Server server = ExtendLoader.getExtendLoader(Server.class).getExtension(applicationProperties.getServer());
-        server.setServerProperties(config.configBean(ServerProperties.class));
-        if (arg.equals(Context.Event.STARTED)) {
-            //解析方法，暴露ace服务。
-            Register register = ExtendLoader.getExtendLoader(Register.class).getExtension(applicationProperties.getRegister());
 
-            // register.setConfig(config);
-            //register.register();
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        server.start();
-
-                    } catch (Exception e) {
-                        // TODO: 异常处理
-                    }
-                }
-            });
-            thread.setDaemon(true);
-            thread.start();
-        } else if (arg.equals(Context.Event.STOPED)) {
-            try {
-                server.close();
-            } catch (IOException e) {
-                // 异常处理
-            }
-        }
-    }
 }

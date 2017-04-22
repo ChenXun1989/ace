@@ -8,18 +8,19 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import wiki.chenxun.ace.core.base.common.AceServerConfig;
 import wiki.chenxun.ace.core.base.remote.Server;
-import wiki.chenxun.ace.core.base.remote.ServerProperties;
 
 import java.io.IOException;
+import java.util.Observable;
 
 /**
  * @Description: Created by chenxun on 2017/4/7.
  */
-
 public class DefaultServer implements Server {
 
-    private ServerProperties serverProperties;
+    private AceServerConfig aceServerConfig;
+
     /**
      * io线程
      */
@@ -45,11 +46,11 @@ public class DefaultServer implements Server {
             bootstrap.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .childHandler(channelInitializer)
-                    .option(ChannelOption.SO_BACKLOG, serverProperties.getBackSize())
-                     .childOption(ChannelOption.SO_KEEPALIVE, true)
-                     .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
-            ChannelFuture future = bootstrap.bind(serverProperties.getPort()).sync();
-            System.out.println("ace server starter !!!");
+                    .option(ChannelOption.SO_BACKLOG, aceServerConfig.getBackSize())
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
+                    .childOption(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT);
+            ChannelFuture future = bootstrap.bind(aceServerConfig.getPort()).sync();
+            System.out.println("ace server starter on port : " + aceServerConfig.getPort());
             future.channel().closeFuture().sync();
         } finally {
             close();
@@ -58,22 +59,24 @@ public class DefaultServer implements Server {
 
     }
 
-    public void setServerProperties(ServerProperties serverProperties) {
-        this.serverProperties = serverProperties;
-    }
-
-    @Override
-    public void update() {
-
-    }
 
     /**
      * 关闭服务
      *
      * @throws IOException io异常
      */
-    public void close() throws IOException {
+    public void close()   {
         workerGroup.shutdownGracefully();
         bossGroup.shutdownGracefully();
+    }
+
+    @Override
+    public void setConfigBean(AceServerConfig aceServerConfig) {
+        this.aceServerConfig = aceServerConfig;
+    }
+
+    @Override
+    public void update(Observable o, Object arg) {
+
     }
 }

@@ -33,7 +33,8 @@ public class ConfigBeanFactoryPostProcessor implements BeanFactoryPostProcessor 
                 if (field.getType().isAnnotationPresent(ConfigBean.class)) {
                     field.setAccessible(true);
                     try {
-                        field.set(obj, config.configBean(field.getType()));
+                        Object value = config.configBeanParser(field.getType()).getConfigBean();
+                        field.set(obj, value);
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }

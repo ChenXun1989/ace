@@ -10,10 +10,14 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.util.AsciiString;
+import wiki.chenxun.ace.core.base.common.AceApplicationConfig;
 import wiki.chenxun.ace.core.base.common.ExtendLoader;
-import wiki.chenxun.ace.core.base.config.Config;
+import wiki.chenxun.ace.core.base.config.ConfigBeanAware;
+import wiki.chenxun.ace.core.base.config.ConfigBeanParser;
+import wiki.chenxun.ace.core.base.config.DefaultConfig;
 import wiki.chenxun.ace.core.base.remote.Dispatcher;
-import wiki.chenxun.ace.core.base.remote.ServerProperties;
+
+import java.util.Observable;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -21,13 +25,16 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 /**
  * @Description: Created by chenxun on 2017/4/8.
  */
-public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
+public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter implements ConfigBeanAware<AceApplicationConfig> {
 
     public static final String APPLICATION_JSON = "application/json";
     /**
      * 请求分发与处理类
      */
-    private final Dispatcher dispatcher;
+    private Dispatcher dispatcher;
+
+    private AceApplicationConfig aceApplicationConfig;
+
     /**
      * http协议header属性
      */
@@ -45,12 +52,13 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
      */
     private static final AsciiString KEEP_ALIVE = new AsciiString("keep-alive");
 
-    public HttpServerInboundHandler() {
-        Config config = ExtendLoader.getExtendLoader(Config.class).getExtension(ExtendLoader.DEFAULT_SPI_NAME);
-        ServerProperties serverProperties = config.configBean(ServerProperties.class);
-        dispatcher = ExtendLoader.getExtendLoader(Dispatcher.class).getExtension(serverProperties.getDispatch());
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        ConfigBeanParser configBeanParser = DefaultConfig.INSTANCE.configBeanParser(AceApplicationConfig.class);
+        AceApplicationConfig config = (AceApplicationConfig) configBeanParser.getConfigBean();
+        setConfigBean(config);
+        configBeanParser.addObserver(this);
     }
-
 
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
@@ -102,9 +110,20 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // FIXME: 开发调试
-       // System.err.println(cause.getMessage());
+        // System.err.println(cause.getMessage());
         super.exceptionCaught(ctx, cause);
     }
 
 
+    @Override
+    public void setConfigBean(AceApplicationConfig aceApplicationConfig) {
+        this.aceApplicationConfig = aceApplicationConfig;
+        dispatcher = ExtendLoader.getExtendLoader(Dispatcher.class).getExtension(aceApplicationConfig.getDispatch());
+    }
+
+
+    @Override
+    public void update(Observable o, Object arg) {
+
+    }
 }

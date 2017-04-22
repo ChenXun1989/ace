@@ -1,10 +1,6 @@
-package wiki.chenxun.ace.core.base.annotations.parser;
-
+package wiki.chenxun.ace.core.base.config;
 
 import wiki.chenxun.ace.core.base.annotations.ConfigBean;
-import wiki.chenxun.ace.core.base.common.ExtendLoader;
-import wiki.chenxun.ace.core.base.config.Config;
-
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -12,63 +8,29 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.MissingResourceException;
+import java.util.Observable;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 /**
- * @Description: Created by chenxun on 2017/4/16.
+ * @Description: Created by chenxun on 2017/4/22.
  */
-public class ConfigBeanParser implements AnnotationParser {
+public class ConfigBeanParser<T> extends Observable {
 
-    /**
-     * Config
-     */
-    private Config config;
+    private volatile T instance;
 
-
-    public ConfigBeanParser() {
-        init();
+    public T getConfigBean() {
+        return instance;
     }
 
-    /**
-     * init
-     */
-    private void init() {
-        config = ExtendLoader.getExtendLoader(Config.class).getExtension(ExtendLoader.DEFAULT_SPI_NAME);
 
-    }
-
-    /**
-     * buildResource
-     * @return ResourceBundle
-     */
-    private ResourceBundle buildResource() {
-        return ResourceBundle.getBundle(Config.DEFAULT_PATH);
-    }
-
-    @Override
-    public void parser(Set<Class<?>> classSet) {
-        ResourceBundle resource = buildResource();
-        for (Class cls : classSet) {
-            Object obj = parserConfigBean(cls, resource);
-            config.add(obj);
-        }
-    }
-
-    /**
-     * parserConfigBean
-     * @param cls  Class
-     * @param resource ResourceBundle
-     * @return ObjectObject
-     */
-    public Object parserConfigBean(Class cls, ResourceBundle resource) {
-        ConfigBean configBean = (ConfigBean) cls.getAnnotation(ConfigBean.class);
+    public void parser(Class<T> t) {
+        ResourceBundle resource = ResourceBundle.getBundle(Config.DEFAULT_PATH);
+        ConfigBean configBean = (ConfigBean) t.getAnnotation(ConfigBean.class);
         String prefix = configBean.value();
-        Object obj = null;
         BeanInfo beanInfo = null;
         try {
-            obj = cls.newInstance();
-            beanInfo = Introspector.getBeanInfo(cls);
+            instance = t.newInstance();
+            beanInfo = Introspector.getBeanInfo(t);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -82,7 +44,7 @@ public class ConfigBeanParser implements AnnotationParser {
                 try {
                     String value = resource.getString(key);
                     Class paramClass = method.getParameterTypes()[0];
-                    method.invoke(obj, parse(paramClass, value));
+                    method.invoke(instance, parse(paramClass, value));
                 } catch (MissingResourceException e) {
                     //TODO： 记录日志
                 } catch (IllegalAccessException e) {
@@ -93,12 +55,13 @@ public class ConfigBeanParser implements AnnotationParser {
             }
 
         }
-        return obj;
     }
+
 
     /**
      * parse
-     * @param cls Class
+     *
+     * @param cls   Class
      * @param value String
      * @return ObjectObject
      */
@@ -117,5 +80,6 @@ public class ConfigBeanParser implements AnnotationParser {
         return value;
 
     }
+
 
 }

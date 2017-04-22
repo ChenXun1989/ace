@@ -1,22 +1,20 @@
 package wiki.chenxun.ace.core.base.register;
 
 import wiki.chenxun.ace.core.base.annotations.Spi;
-import wiki.chenxun.ace.core.base.common.ShutDownClearer;
-import wiki.chenxun.ace.core.base.config.Config;
+import wiki.chenxun.ace.core.base.common.AceApplicationConfig;
+import wiki.chenxun.ace.core.base.config.ConfigBeanAware;
 
 /**
  * @Description: Created by chenxun on 2017/4/12.
  */
 @Spi("zookeeper")
-public interface Register extends ShutDownClearer {
+public interface Register extends ConfigBeanAware<AceApplicationConfig> {
 
     String ROOT="/ace";
 
     void register();
 
     void unregister();
-
-    void setConfig(Config config);
 
 
 

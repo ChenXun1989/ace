@@ -1,49 +1,36 @@
 package wiki.chenxun.ace.core.base.config;
 
-import java.io.IOException;;
-import java.util.Collection;
-import java.util.HashMap;
+
 import java.util.Map;
-import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Description: Created by chenxun on 2017/4/16.
  */
-public class DefaultConfig implements Config {
+public enum DefaultConfig implements Config {
+
+    INSTANCE;
 
     /**
-     * 配置类实例
+     * 配置类解析实例
      */
-    private Map<Class, Object> configInstances = new HashMap<>();
+    private Map<Class, ConfigBeanParser> configInstances = new ConcurrentHashMap<>();
+
 
     @Override
-    public <T> T configBean(Class<T> cls) {
-        return (T) configInstances.get(cls);
-    }
-
-    @Override
-    public Collection<Object> lists() {
-        return configInstances.values();
-    }
-
-    @Override
-    public <T> void add(T t) {
-        configInstances.put(t.getClass(), t);
-    }
-
-    @Override
-    public <T> void update(T t) {
-        // TODO: 写入文件
-        Properties props = new Properties();
-        try {
-            props.load(Config.class.getClassLoader().getResourceAsStream(Config.DEFAULT_PATH + ".properties"));
-
-
-        } catch (IOException e) {
-            e.printStackTrace();
+    public ConfigBeanParser configBeanParser(Class cls) {
+        ConfigBeanParser configBeanParser = configInstances.get(cls);
+        if (configBeanParser == null) {
+            configBeanParser = new ConfigBeanParser();
+            configBeanParser.parser(cls);
+            add(configBeanParser);
         }
+        return configBeanParser;
 
     }
 
-
+    @Override
+    public void add(ConfigBeanParser parser) {
+        configInstances.put(parser.getConfigBean().getClass(), parser);
+    }
 }
