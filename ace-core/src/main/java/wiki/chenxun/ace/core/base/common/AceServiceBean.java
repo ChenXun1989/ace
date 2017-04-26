@@ -32,10 +32,10 @@ public class AceServiceBean<T>  {
 
 
     public Object exec(String uri, AceHttpMethod aceHttpMethod, Map<String, List<String>> requestMap, String jsonStr) {
-        MethodDefine method = Context.getMethodDefine(this, aceHttpMethod);
 
         Object result = null;
         try {
+            MethodDefine method = Context.getMethodDefine(this, aceHttpMethod);
             if (aceHttpMethod.equals(AceHttpMethod.GET) || aceHttpMethod.equals(AceHttpMethod.DELETE)) {
                 result = excuteByParamters(method, requestMap);
             } else if (aceHttpMethod.equals(AceHttpMethod.POST) || aceHttpMethod.equals(AceHttpMethod.PUT)) {
@@ -54,6 +54,8 @@ public class AceServiceBean<T>  {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
             e.printStackTrace();
+        }catch (Exception ex){
+            ex.printStackTrace();
         }
         return result;
     }

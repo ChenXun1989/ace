@@ -18,6 +18,7 @@ import wiki.chenxun.ace.core.base.config.DefaultConfig;
 import wiki.chenxun.ace.core.base.remote.Dispatcher;
 
 import java.util.Observable;
+import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
@@ -26,6 +27,8 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * @Description: Created by chenxun on 2017/4/8.
  */
 public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter implements ConfigBeanAware<AceApplicationConfig> {
+
+    private Pattern staticFilePattern = Pattern.compile(".?.html|.jpg|.png|.css|.js");
 
     public static final String APPLICATION_JSON = "application/json";
     /**
@@ -70,6 +73,10 @@ public class HttpServerInboundHandler extends ChannelInboundHandlerAdapter imple
         if (msg instanceof FullHttpRequest) {
             FullHttpRequest request = (FullHttpRequest) msg;
             Object response = null;
+            if (staticFilePattern.matcher(request.uri()).find()) {
+                super.channelRead(ctx, msg);
+                return;
+            }
             try {
                 response = dispatcher.doDispatcher(request);
             } catch (Exception ex) {

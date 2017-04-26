@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>main</title>
+    <!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+    <link rel="stylesheet" href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/bootstrap-table.min.js"></script>
+    <!-- Latest compiled and minified Locales -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-table/1.11.1/locale/bootstrap-table-zh-CN.min.js"></script>
+
+</head>
+<body>
+
+<div class="container">
+    <div class="row clearfix">
+        <div class="col-md-12 column">
+            <ul class="nav nav-tabs">
+                <li >
+                    <a href="#">首页</a>
+                </li>
+                <li class="active">
+                    <a href="#">配置管理</a>
+                </li>
+                <li class="disabled">
+                    <a href="#">信息</a>
+                </li>
+                <li class="dropdown pull-right">
+                    <a href="#" data-toggle="dropdown" class="dropdown-toggle">User<strong class="caret"></strong></a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#">操作</a>
+                        </li>
+                        <li>
+                            <a href="#">设置栏目</a>
+                        </li>
+                        <li>
+                            <a href="#">更多设置</a>
+                        </li>
+                        <li class="divider">
+                        </li>
+                        <li>
+                            <a href="#">分割线</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <table class="table"
+                   id="table"
+                   data-toggle="table"
+                   data-url="/zookeeper/manage"
+                   data-height="400"
+                   data-side-pagination="server"
+                   data-pagination="true"
+                   data-page-list="[5, 10, 20, 50, 100, 200]"
+                   data-pagination-first-text="First"
+                   data-pagination-pre-text="Previous"
+                   data-pagination-next-text="Next"
+                   data-pagination-last-text="Last"
+                   data-search="true" >
+                <thead>
+                <tr>
+                    <th data-field="name">
+                        name
+                    </th>
+                    <th data-field="ip">
+                        ip
+                    </th >
+                    <th data-field="port">
+                        port
+                    </th>
+                    <th data-field="id">
+                        操作
+                    </th>
+                </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+
+    var $table = $('#table');
+    $(function () {
+    });
+
+
+</script>
+
+</body>
+</html>

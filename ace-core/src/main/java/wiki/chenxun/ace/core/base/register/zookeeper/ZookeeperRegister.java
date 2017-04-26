@@ -5,9 +5,9 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
-import wiki.chenxun.ace.core.base.common.AceApplicationConfig;
 import wiki.chenxun.ace.core.base.config.Config;
 import wiki.chenxun.ace.core.base.register.Register;
+import wiki.chenxun.ace.core.base.register.RegisterConfig;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -17,16 +17,16 @@ import java.util.Observable;
 /**
  * @Description: Created by chenxun on 2017/4/12.
  */
-public class ZookeeperRegister   implements Register {
+public class ZookeeperRegister implements Register {
 
     private ZooKeeper zooKeeper;
 
-    private Config config;
+    private RegisterConfig registerConfig;
 
     public void init() throws IOException {
 
         String url = "localhost:2080";
-        zooKeeper = new ZooKeeper(url, 60 * 100, new DefaultWatcher(config));
+        zooKeeper = new ZooKeeper(url, 60 * 100, new DefaultWatcher(registerConfig));
         createRootNode();
 
     }
@@ -62,10 +62,9 @@ public class ZookeeperRegister   implements Register {
     }
 
 
-
     @Override
-    public void setConfigBean(AceApplicationConfig aceApplicationConfig) {
-
+    public void setConfigBean(RegisterConfig registerConfig) {
+        this.registerConfig = registerConfig;
     }
 
     @Override

@@ -40,6 +40,7 @@ public class DefaultDispatcher implements Dispatcher {
         if (uri.endsWith("favicon.ico")) {
             return "";
         }
+
         AceServiceBean aceServiceBean = Context.getAceServiceBean(uri);
         AceHttpMethod aceHttpMethod = AceHttpMethod.getAceHttpMethod(request.method().toString());
         ByteBuf content = request.content();

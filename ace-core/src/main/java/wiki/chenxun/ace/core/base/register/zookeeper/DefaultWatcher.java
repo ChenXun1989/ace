@@ -3,7 +3,7 @@ package wiki.chenxun.ace.core.base.register.zookeeper;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
-import wiki.chenxun.ace.core.base.config.Config;
+import wiki.chenxun.ace.core.base.register.RegisterConfig;
 
 
 /**
@@ -11,10 +11,10 @@ import wiki.chenxun.ace.core.base.config.Config;
  */
 public class DefaultWatcher implements Watcher {
 
-    private Config config;
+    private RegisterConfig registerConfig;
 
-    public DefaultWatcher(Config config) {
-        this.config = config;
+    public DefaultWatcher(RegisterConfig registerConfig) {
+        this.registerConfig = registerConfig;
     }
 
     @Override
