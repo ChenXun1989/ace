@@ -4,6 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.stream.ChunkedWriteHandler;
 
 /**
  * @Description: Created by chenxun on 2017/4/8.
@@ -13,7 +14,7 @@ public class HttpProtocolChannelInitializer extends ChannelInitializer {
     /**
      * 请求体最大长度
      */
-    public static final int MAX_CONTENT_LENGTH = 1024 * 10;
+    public static final int MAX_CONTENT_LENGTH = 65536;
 
     /**
      *  初始化 chanelHandler
@@ -28,6 +29,12 @@ public class HttpProtocolChannelInitializer extends ChannelInitializer {
         //合并成一个
         channel.pipeline().addLast(new HttpObjectAggregator(MAX_CONTENT_LENGTH));
 
+        channel.pipeline().addLast(new ChunkedWriteHandler());
+
         channel.pipeline().addLast(new HttpServerInboundHandler());
+
+        channel.pipeline().addLast(new StaticFileServerHandler());
+
+
     }
 }

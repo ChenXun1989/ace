@@ -10,6 +10,7 @@ import wiki.chenxun.ace.core.base.annotations.ConfigBean;
 @ConfigBean(AceApplicationConfig.PREFIX)
 public class AceApplicationConfig {
 
+
     public static final String PREFIX = "ace.application";
 
     private String name;

@@ -8,6 +8,8 @@ import wiki.chenxun.ace.core.base.annotations.Spi;
  */
 public interface Config {
 
+    String ROOT_PATH = "/ace/config/";
+
     /**
      * DEFAULT_PATH
      */
@@ -24,6 +26,10 @@ public interface Config {
      * @param parser
      */
     void add(ConfigBeanParser parser);
+
+    void export();
+
+    void clean();
 
 
 }

@@ -7,6 +7,7 @@ import wiki.chenxun.ace.core.base.config.ConfigBeanAware;
 import wiki.chenxun.ace.core.base.config.DefaultConfig;
 import wiki.chenxun.ace.core.base.container.Container;
 import wiki.chenxun.ace.core.base.register.Register;
+import wiki.chenxun.ace.core.base.register.RegisterConfig;
 import wiki.chenxun.ace.core.base.remote.Server;
 import wiki.chenxun.ace.core.base.support.ScanUtil;
 
@@ -40,10 +41,12 @@ public class AceApplication implements ConfigBeanAware<AceApplicationConfig> {
     }
 
     public void scan() {
-
         config = DefaultConfig.INSTANCE;
         if (aceApplicationConfig == null) {
             aceApplicationConfig = (AceApplicationConfig) config.configBeanParser(AceApplicationConfig.class).getConfigBean();
+        }
+        if (aceApplicationConfig.getName() == null && aceApplicationConfig.getName().trim().length() == 0) {
+            throw new RuntimeException("ace.application.name must not empty ");
         }
 
         Set<Class<?>> baseSet = ScanUtil.findFileClass(basePage);
@@ -101,7 +104,12 @@ public class AceApplication implements ConfigBeanAware<AceApplicationConfig> {
         container.start();
         for (AceServiceBean aceServiceBean : Context.beans()) {
             Class cls = aceServiceBean.getInstance().getClass();
-            Object bean = container.getBean(cls);
+            Object bean = null;
+            try {
+                bean = container.getBean(cls);
+            } catch (Exception ex) {
+
+            }
             if (bean != null) {
                 aceServiceBean.setInstance(bean);
             }
@@ -134,8 +142,8 @@ public class AceApplication implements ConfigBeanAware<AceApplicationConfig> {
                 }
             }
         }
-
         register = ExtendLoader.getExtendLoader(Register.class).getExtension(aceApplicationConfig.getRegister());
+        register.setConfigBean((RegisterConfig) config.configBeanParser(RegisterConfig.class).getConfigBean());
         //TODO: 注册服务
     }
 
@@ -156,7 +164,7 @@ public class AceApplication implements ConfigBeanAware<AceApplicationConfig> {
         });
         serverThread.setDaemon(true);
         serverThread.start();
-
+        config.export();
 
     }
 
@@ -168,6 +176,7 @@ public class AceApplication implements ConfigBeanAware<AceApplicationConfig> {
                 synchronized (this) {
                     server.close();
                     container.stop();
+                    config.clean();
                     state = 1;
                     System.out.println("shutdown !!!");
                     AceApplication.class.notifyAll();
